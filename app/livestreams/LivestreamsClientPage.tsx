@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Calendar } from "@/components/ui/calendar"
 import { Bell, BellOff, CalendarDays, Flame, Package, TrendingUp } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
@@ -150,41 +151,7 @@ export default function LivestreamsClientPage() {
             <CardDescription className="text-xs sm:text-sm">Choose a date to see scheduled streams</CardDescription>
           </CardHeader>
           <CardContent className="p-3 sm:p-4">
-            <div className="space-y-4">
-              <div className="grid grid-cols-7 gap-1 text-center text-xs">
-                <div className="font-medium">Sun</div>
-                <div className="font-medium">Mon</div>
-                <div className="font-medium">Tue</div>
-                <div className="font-medium">Wed</div>
-                <div className="font-medium">Thu</div>
-                <div className="font-medium">Fri</div>
-                <div className="font-medium">Sat</div>
-              </div>
-
-              <div className="grid grid-cols-7 gap-1">
-                {Array.from({ length: 35 }, (_, i) => {
-                  const d = new Date()
-                  d.setDate(d.getDate() - d.getDay() + i)
-                  const isCurrentMonth = d.getMonth() === new Date().getMonth()
-                  const isSelected =
-                    date &&
-                    d.getDate() === date.getDate() &&
-                    d.getMonth() === date.getMonth() &&
-                    d.getFullYear() === date.getFullYear()
-
-                  return (
-                    <Button
-                      key={i}
-                      variant={isSelected ? "default" : "ghost"}
-                      className={`h-8 w-8 p-0 ${!isCurrentMonth ? "text-muted-foreground opacity-50" : ""}`}
-                      onClick={() => setDate(new Date(d))}
-                    >
-                      {d.getDate()}
-                    </Button>
-                  )
-                })}
-              </div>
-            </div>
+            <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
           </CardContent>
           <CardFooter className="p-3 sm:p-4 pt-0">
             <Button variant="outline" className="w-full text-xs sm:text-sm h-9" onClick={() => setDate(new Date())}>
