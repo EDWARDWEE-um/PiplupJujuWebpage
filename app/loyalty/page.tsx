@@ -41,16 +41,16 @@ export default function LoyaltyPage() {
   }
 
   return (
-    <div className="container py-8 md:py-12">
+    <div className="container py-8 md:py:12">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">PokéCollect Rewards</h1>
           <p className="text-muted-foreground">Earn points with every purchase and redeem for exclusive rewards</p>
         </div>
 
-        <Card className="mb-8 bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-none">
+        <Card className="mb-8 bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-none overflow-hidden">
           <CardContent className="p-6 md:p-8">
-            <div className="grid md:grid-cols-2 gap-6 items-center">
+            <div className="grid md:grid-cols-2 gap-4 md:gap-6 items-center">
               <div className="space-y-4">
                 <div className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-sm">
                   <Award className="mr-1 h-4 w-4" />
@@ -64,7 +64,7 @@ export default function LoyaltyPage() {
                   </Link>
                 </div>
               </div>
-              <div className="bg-white/10 rounded-lg p-6">
+              <div className="bg-white/10 rounded-lg p-4 sm:p-6 max-w-full">
                 <h3 className="font-semibold mb-3">How to Earn Points</h3>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">

@@ -4,7 +4,7 @@ import { Flame, Package } from "lucide-react"
 
 export default function RipOrShipHero() {
   return (
-    <section className="w-full py-8 sm:py-12 md:py-16 lg:py-24 bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-700">
+    <section className="w-full py-8 sm:py-12 md:py-16 lg:py-24 bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-700 overflow-hidden">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center space-y-4 text-center">
           <div className="space-y-2">
@@ -15,7 +15,7 @@ export default function RipOrShipHero() {
               Your choice: Watch us open your packs live on stream or get them shipped sealed to your door
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto max-w-full">
             <Link href="/rip-or-ship?option=rip" className="w-full sm:w-auto">
               <Button size="lg" className="bg-red-500 hover:bg-red-600 text-white w-full">
                 <Flame className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />

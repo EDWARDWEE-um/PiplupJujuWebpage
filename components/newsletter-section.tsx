@@ -29,7 +29,7 @@ export default function NewsletterSection() {
   }
 
   return (
-    <Card>
+    <Card className="w-full overflow-hidden">
       <CardHeader className="p-4 sm:p-6">
         <CardTitle className="text-lg sm:text-xl">Stay Updated</CardTitle>
         <CardDescription>

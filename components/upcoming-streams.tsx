@@ -57,8 +57,8 @@ export default function UpcomingStreams() {
   return (
     <div className="space-y-3 sm:space-y-4 mt-4">
       {streams.map((stream) => (
-        <Card key={stream.id}>
-          <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <Card key={stream.id} className="w-full overflow-hidden">
+          <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 w-full">
             <div className="space-y-1">
               <h3 className="font-medium text-sm sm:text-base">{stream.title}</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">{stream.date}</p>

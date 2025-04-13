@@ -144,9 +144,12 @@ export default function MarketPriceWidget() {
           </div>
 
           <TabsContent value="trending" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-8">
               {trendingCards.slice(0, 2).map((item) => (
-                <div key={item.id} className="flex items-center p-2 sm:p-3 border rounded-lg">
+                <div
+                  key={item.id}
+                  className="flex items-center p-2 sm:p-3 border rounded-lg max-w-full overflow-hidden"
+                >
                   <Image
                     src={item.image || "/placeholder.svg"}
                     alt={item.name}
@@ -174,7 +177,10 @@ export default function MarketPriceWidget() {
                 </div>
               ))}
               {trendingSealed.slice(0, 1).map((item) => (
-                <div key={item.id} className="flex items-center p-2 sm:p-3 border rounded-lg">
+                <div
+                  key={item.id}
+                  className="flex items-center p-2 sm:p-3 border rounded-lg max-w-full overflow-hidden"
+                >
                   <Image
                     src={item.image || "/placeholder.svg"}
                     alt={item.name}
@@ -202,7 +208,10 @@ export default function MarketPriceWidget() {
                 </div>
               ))}
               {trendingSlabs.slice(0, 1).map((item) => (
-                <div key={item.id} className="flex items-center p-2 sm:p-3 border rounded-lg">
+                <div
+                  key={item.id}
+                  className="flex items-center p-2 sm:p-3 border rounded-lg max-w-full overflow-hidden"
+                >
                   <Image
                     src={item.image || "/placeholder.svg"}
                     alt={item.name}
@@ -233,9 +242,12 @@ export default function MarketPriceWidget() {
           </TabsContent>
 
           <TabsContent value="singles" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-8">
               {trendingCards.map((item) => (
-                <div key={item.id} className="flex items-center p-2 sm:p-3 border rounded-lg">
+                <div
+                  key={item.id}
+                  className="flex items-center p-2 sm:p-3 border rounded-lg max-w-full overflow-hidden"
+                >
                   <Image
                     src={item.image || "/placeholder.svg"}
                     alt={item.name}
@@ -266,9 +278,12 @@ export default function MarketPriceWidget() {
           </TabsContent>
 
           <TabsContent value="sealed" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-8">
               {trendingSealed.map((item) => (
-                <div key={item.id} className="flex items-center p-2 sm:p-3 border rounded-lg">
+                <div
+                  key={item.id}
+                  className="flex items-center p-2 sm:p-3 border rounded-lg max-w-full overflow-hidden"
+                >
                   <Image
                     src={item.image || "/placeholder.svg"}
                     alt={item.name}
@@ -299,9 +314,12 @@ export default function MarketPriceWidget() {
           </TabsContent>
 
           <TabsContent value="slabs" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-8">
               {trendingSlabs.map((item) => (
-                <div key={item.id} className="flex items-center p-2 sm:p-3 border rounded-lg">
+                <div
+                  key={item.id}
+                  className="flex items-center p-2 sm:p-3 border rounded-lg max-w-full overflow-hidden"
+                >
                   <Image
                     src={item.image || "/placeholder.svg"}
                     alt={item.name}

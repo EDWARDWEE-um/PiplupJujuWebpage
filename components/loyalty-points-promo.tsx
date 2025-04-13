@@ -5,9 +5,12 @@ import { Award, Gift, TrendingUp } from "lucide-react"
 
 export default function LoyaltyPointsPromo() {
   return (
-    <Card className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-none">
+    <Card
+      className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-none w-full overflow-hidden"
+      style={{ maxWidth: "100%" }}
+    >
       <CardContent className="p-4 sm:p-6 md:p-8">
-        <div className="grid md:grid-cols-2 gap-6 items-center">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-6 items-center" style={{ maxWidth: "100%" }}>
           <div className="space-y-3 sm:space-y-4">
             <div className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs sm:text-sm">
               <Award className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
@@ -38,8 +41,8 @@ export default function LoyaltyPointsPromo() {
               </Link>
             </div>
           </div>
-          <div className="bg-white/10 rounded-lg p-4 sm:p-6 text-center">
-            <div className="text-4xl sm:text-5xl md:text-6xl font-bold mb-2">2X</div>
+          <div className="bg-white/10 rounded-lg p-4 sm:p-6 text-center w-full" style={{ maxWidth: "100%" }}>
+            <div className="text-4xl sm:text-5xl md:text-6xl font-bold mb-2 whitespace-nowrap">2X</div>
             <div className="text-lg sm:text-xl md:text-2xl font-semibold mb-4">POINTS</div>
             <p className="mb-4 text-sm sm:text-base">On all Rip or Ship purchases</p>
             <div className="text-xs sm:text-sm bg-white/20 p-3 rounded-md">

@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Line, LineChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { Line, LineChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts"
 import { Button } from "@/components/ui/button"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useMobile } from "@/hooks/use-mobile"
+import { toast } from "@/hooks/use-toast"
 
 interface PriceChartProps {
   productType: "sealed" | "singles" | "slabs" | "blaziken-vmax-alt"
@@ -13,6 +13,7 @@ interface PriceChartProps {
 export default function PriceChart({ productType }: PriceChartProps) {
   const [timeRange, setTimeRange] = useState<"1m" | "3m" | "6m" | "1y" | "all">("3m")
   const isMobile = useMobile()
+  const [selectedPoint, setSelectedPoint] = useState<{ date: string; price: number } | null>(null)
 
   // Sample data for different product types
   const chartData = {
@@ -81,7 +82,7 @@ export default function PriceChart({ productType }: PriceChartProps) {
         { date: "Nov '22", price: 19.99 },
         { date: "Jan '23", price: 22.99 },
         { date: "Mar '23", price: 24.99 },
-        { date: "Apr '23", price: 27.99 },
+        { date: "Apr", price: 27.99 },
       ],
       all: [
         { date: "2020", price: 14.99 },
@@ -155,7 +156,7 @@ export default function PriceChart({ productType }: PriceChartProps) {
         { date: "Nov '22", price: 159.99 },
         { date: "Jan '23", price: 175.99 },
         { date: "Mar '23", price: 189.99 },
-        { date: "Apr '23", price: 199.99 },
+        { date: "Apr", price: 199.99 },
       ],
       all: [
         { date: "2021", price: 89.99 },
@@ -178,6 +179,33 @@ export default function PriceChart({ productType }: PriceChartProps) {
         return "Charizard VMAX (PSA 10)"
       case "blaziken-vmax-alt":
         return "Blaziken VMAX (Alternate Art Secret)"
+    }
+  }
+
+  // Custom tooltip component
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-200 shadow-md rounded-md">
+          <p className="text-sm font-medium">{label}</p>
+          <p className="text-sm text-gray-700">${payload[0].value.toFixed(2)}</p>
+        </div>
+      )
+    }
+    return null
+  }
+
+  // Handle click on chart
+  const handleClick = (data: any) => {
+    if (data && data.activePayload && data.activePayload.length > 0) {
+      const clickedData = data.activePayload[0].payload
+      if (clickedData && clickedData.date) {
+        setSelectedPoint(clickedData)
+        toast({
+          title: "Price Information",
+          description: `${clickedData.date}: $${clickedData.price.toFixed(2)}`,
+        })
+      }
     }
   }
 
@@ -228,43 +256,71 @@ export default function PriceChart({ productType }: PriceChartProps) {
           </Button>
         </div>
       </div>
-      <div className="w-full">
-        <ChartContainer
-          config={{
-            price: {
-              label: "Price ($)",
-              color: "hsl(var(--chart-1))",
-            },
-          }}
-          className="h-[250px] sm:h-[300px]"
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: isMobile ? 10 : 12 }} tickMargin={5} />
+      <div className="w-full" style={{ minHeight: "250px" }}>
+        <div className="h-[250px] sm:h-[300px] w-full" style={{ minHeight: "250px" }}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={250}>
+            <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 5 }} onClick={handleClick}>
+              <CartesianGrid strokeDasharray="3 3" stroke="transparent" />
+              <XAxis dataKey="date" tick={{ fontSize: isMobile ? 10 : 12 }} tickMargin={5} stroke="#9ca3af" />
               <YAxis
                 domain={["auto", "auto"]}
                 tick={{ fontSize: isMobile ? 10 : 12 }}
                 tickFormatter={(value) => `$${value}`}
                 width={isMobile ? 40 : 50}
+                stroke="#9ca3af"
               />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <Tooltip content={<CustomTooltip />} />
               <Line
                 type="monotone"
                 dataKey="price"
-                stroke="var(--color-price)"
-                activeDot={{ r: isMobile ? 6 : 8 }}
+                stroke="#3b82f6"
+                activeDot={{
+                  r: isMobile ? 6 : 8,
+                  onClick: (data) => {
+                    if (data && data.payload) {
+                      const point = data.payload
+                      if (point && point.date) {
+                        setSelectedPoint(point)
+                        toast({
+                          title: "Price Information",
+                          description: `${point.date}: $${point.price.toFixed(2)}`,
+                        })
+                      }
+                    }
+                  },
+                }}
                 strokeWidth={isMobile ? 1.5 : 2}
+                dot={{
+                  stroke: "#3b82f6",
+                  strokeWidth: 2,
+                  r: 4,
+                  onClick: (data) => {
+                    if (data && data.payload) {
+                      const point = data.payload
+                      if (point && point.date) {
+                        setSelectedPoint(point)
+                        toast({
+                          title: "Price Information",
+                          description: `${point.date}: $${point.price.toFixed(2)}`,
+                        })
+                      }
+                    }
+                  },
+                }}
+                cursor={{ stroke: "#3b82f6", strokeWidth: 1 }}
               />
             </LineChart>
           </ResponsiveContainer>
-        </ChartContainer>
+        </div>
       </div>
-      {productType === "blaziken-vmax-alt" && (
-        <div className="mt-2 text-xs sm:text-sm text-gray-500">
-          <p>Data sourced from TCGPlayer. Watch our TikTok streams for live pack openings and card pulls!</p>
+      {selectedPoint && selectedPoint.date && (
+        <div className="text-sm text-center font-medium">
+          Selected: {selectedPoint.date} - ${selectedPoint.price.toFixed(2)}
         </div>
       )}
+      <div className="mt-2 text-xs sm:text-sm text-gray-500">
+        <p>Data sourced from TCGPlayer. Watch our TikTok streams for live pack openings and card pulls!</p>
+      </div>
     </div>
   )
 }

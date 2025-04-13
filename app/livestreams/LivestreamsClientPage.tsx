@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar } from "@/components/ui/calendar"
 import { Bell, BellOff, CalendarDays, Flame, Package, TrendingUp } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
@@ -151,7 +150,40 @@ export default function LivestreamsClientPage() {
             <CardDescription className="text-xs sm:text-sm">Choose a date to see scheduled streams</CardDescription>
           </CardHeader>
           <CardContent className="p-3 sm:p-4">
-            <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
+            <div className="space-y-4">
+              <div className="grid grid-cols-7 gap-1 text-center text-xs">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                  <div key={day} className="font-medium">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-1" style={{ maxWidth: "100%" }}>
+                {Array.from({ length: 35 }, (_, i) => {
+                  const d = new Date()
+                  d.setDate(d.getDate() - d.getDay() + i)
+                  const isCurrentMonth = d.getMonth() === new Date().getMonth()
+                  const isSelected =
+                    date &&
+                    d.getDate() === date.getDate() &&
+                    d.getMonth() === date.getMonth() &&
+                    d.getFullYear() === date.getFullYear()
+
+                  return (
+                    <div key={i} className="flex justify-center">
+                      <Button
+                        variant={isSelected ? "default" : "ghost"}
+                        className={`h-8 w-8 p-0 flex items-center justify-center ${!isCurrentMonth ? "text-muted-foreground opacity-50" : ""}`}
+                        onClick={() => setDate(new Date(d))}
+                      >
+                        {d.getDate()}
+                      </Button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </CardContent>
           <CardFooter className="p-3 sm:p-4 pt-0">
             <Button variant="outline" className="w-full text-xs sm:text-sm h-9" onClick={() => setDate(new Date())}>
@@ -175,7 +207,7 @@ export default function LivestreamsClientPage() {
           {filteredEvents.length > 0 ? (
             <div className="space-y-3 sm:space-y-4">
               {filteredEvents.map((event) => (
-                <Card key={event.id}>
+                <Card key={event.id} className="w-full overflow-hidden">
                   <CardContent className="p-3 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                       <div className="flex-1">

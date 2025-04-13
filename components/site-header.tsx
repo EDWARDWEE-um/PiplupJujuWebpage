@@ -26,7 +26,7 @@ export default function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
+      <div className="container flex h-16 items-center overflow-x-hidden">
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="mr-2 md:hidden">
@@ -179,7 +179,7 @@ export default function SiteHeader() {
         </nav>
         <div className="flex items-center ml-auto gap-2">
           {isSearchOpen ? (
-            <div className="relative flex items-center w-full max-w-[180px] sm:max-w-[300px]">
+            <div className="relative flex items-center w-full max-w-[150px] sm:max-w-[300px]">
               <Input type="search" placeholder="Search..." className="h-10 pr-8" autoFocus />
               <Button
                 variant="ghost"
