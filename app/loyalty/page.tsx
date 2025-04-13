@@ -92,125 +92,220 @@ export default function LoyaltyPage() {
             <TabsTrigger value="tiers">Membership Tiers</TabsTrigger>
           </TabsList>
           <TabsContent value="rewards" className="mt-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                <CardHeader>
-                  <CardTitle>$5 Off Your Next Order</CardTitle>
-                  <CardDescription>500 points</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Get $5 off your next order. Valid for 30 days after redemption.
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    onClick={() => handleRedeem(500, "$5 Off Coupon")}
-                    disabled={!user || user.points < 500}
-                    className="w-full"
-                  >
-                    Redeem 500 Points
-                  </Button>
-                </CardFooter>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Free Shipping</CardTitle>
-                  <CardDescription>300 points</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Free standard shipping on your next order. Valid for 30 days.
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    onClick={() => handleRedeem(300, "Free Shipping")}
-                    disabled={!user || user.points < 300}
-                    className="w-full"
-                  >
-                    Redeem 300 Points
-                  </Button>
-                </CardFooter>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Priority Rip Slot</CardTitle>
-                  <CardDescription>200 points</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Get priority scheduling for your next Live Rip event.</p>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    onClick={() => handleRedeem(200, "Priority Rip Slot")}
-                    disabled={!user || user.points < 200}
-                    className="w-full"
-                  >
-                    Redeem 200 Points
-                  </Button>
-                </CardFooter>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Exclusive Card Sleeve</CardTitle>
-                  <CardDescription>100 points</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Limited edition PokéCollect card sleeves (pack of 50).
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    onClick={() => handleRedeem(100, "Exclusive Card Sleeve")}
-                    disabled={!user || user.points < 100}
-                    className="w-full"
-                  >
-                    Redeem 100 Points
-                  </Button>
-                </CardFooter>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>$10 Off Your Next Order</CardTitle>
-                  <CardDescription>900 points</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Get $10 off your next order. Valid for 30 days after redemption.
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    onClick={() => handleRedeem(900, "$10 Off Coupon")}
-                    disabled={!user || user.points < 900}
-                    className="w-full"
-                  >
-                    Redeem 900 Points
-                  </Button>
-                </CardFooter>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Exclusive Playmat</CardTitle>
-                  <CardDescription>1500 points</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Limited edition PokéCollect playmat with exclusive artwork.
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    onClick={() => handleRedeem(1500, "Exclusive Playmat")}
-                    disabled={!user || user.points < 1500}
-                    className="w-full"
-                  >
-                    Redeem 1500 Points
-                  </Button>
-                </CardFooter>
-              </Card>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium mb-4">Exclusive Rewards (Points Only)</h3>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Limited Edition Playmat</CardTitle>
+                      <CardDescription>1500 points</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Exclusive PokéCollect playmat with limited edition artwork. Only available through loyalty
+                        points.
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-2">
+                      <Button
+                        onClick={() => handleRedeem(1500, "Limited Edition Playmat")}
+                        disabled={!user || user.points < 1500}
+                        className="w-full"
+                      >
+                        Redeem 1500 Points
+                      </Button>
+                      <div className="h-10"></div> {/* Spacer to match height of cards with two buttons */}
+                    </CardFooter>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Collector's Binder</CardTitle>
+                      <CardDescription>1200 points</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Premium PokéCollect binder with exclusive design. Not available for purchase.
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-2">
+                      <Button
+                        onClick={() => handleRedeem(1200, "Collector's Binder")}
+                        disabled={!user || user.points < 1200}
+                        className="w-full"
+                      >
+                        Redeem 1200 Points
+                      </Button>
+                      <div className="h-10"></div> {/* Spacer to match height of cards with two buttons */}
+                    </CardFooter>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>VIP Stream Access</CardTitle>
+                      <CardDescription>800 points</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Exclusive access to VIP-only livestreams with special openings and giveaways.
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-2">
+                      <Button
+                        onClick={() => handleRedeem(800, "VIP Stream Access")}
+                        disabled={!user || user.points < 800}
+                        className="w-full"
+                      >
+                        Redeem 800 Points
+                      </Button>
+                      <div className="h-10"></div> {/* Spacer to match height of cards with two buttons */}
+                    </CardFooter>
+                  </Card>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-lg font-medium mb-4">Regular Rewards (Points or Purchase)</h3>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Card Sleeves (50 pack)</CardTitle>
+                      <CardDescription>300 points or $4.99</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Standard PokéCollect card sleeves. Available for purchase or point redemption.
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-2">
+                      <Button
+                        onClick={() => handleRedeem(300, "Card Sleeves")}
+                        disabled={!user || user.points < 300}
+                        className="w-full"
+                      >
+                        Redeem 300 Points
+                      </Button>
+                      <Button variant="outline" className="w-full">
+                        Purchase for $4.99
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Deck Box</CardTitle>
+                      <CardDescription>500 points or $7.99</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Standard PokéCollect deck box. Available for purchase or point redemption.
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-2">
+                      <Button
+                        onClick={() => handleRedeem(500, "Deck Box")}
+                        disabled={!user || user.points < 500}
+                        className="w-full"
+                      >
+                        Redeem 500 Points
+                      </Button>
+                      <Button variant="outline" className="w-full">
+                        Purchase for $7.99
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Promo Card</CardTitle>
+                      <CardDescription>700 points or $9.99</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Monthly promotional card. Available for purchase or point redemption.
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-2">
+                      <Button
+                        onClick={() => handleRedeem(700, "Promo Card")}
+                        disabled={!user || user.points < 700}
+                        className="w-full"
+                      >
+                        Redeem 700 Points
+                      </Button>
+                      <Button variant="outline" className="w-full">
+                        Purchase for $9.99
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-lg font-medium mb-4">Discount Rewards</h3>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>$5 Off Your Next Order</CardTitle>
+                      <CardDescription>500 points</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Get $5 off your next order. Valid for 30 days after redemption.
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-2">
+                      <Button
+                        onClick={() => handleRedeem(500, "$5 Off Coupon")}
+                        disabled={!user || user.points < 500}
+                        className="w-full"
+                      >
+                        Redeem 500 Points
+                      </Button>
+                      <div className="h-10"></div> {/* Spacer to match height of cards with two buttons */}
+                    </CardFooter>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Free Shipping</CardTitle>
+                      <CardDescription>300 points</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Free standard shipping on your next order. Valid for 30 days.
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-2">
+                      <Button
+                        onClick={() => handleRedeem(300, "Free Shipping")}
+                        disabled={!user || user.points < 300}
+                        className="w-full"
+                      >
+                        Redeem 300 Points
+                      </Button>
+                      <div className="h-10"></div> {/* Spacer to match height of cards with two buttons */}
+                    </CardFooter>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Priority Rip Slot</CardTitle>
+                      <CardDescription>200 points</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Get priority scheduling for your next Live Rip event.
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-2">
+                      <Button
+                        onClick={() => handleRedeem(200, "Priority Rip Slot")}
+                        disabled={!user || user.points < 200}
+                        className="w-full"
+                      >
+                        Redeem 200 Points
+                      </Button>
+                      <div className="h-10"></div> {/* Spacer to match height of cards with two buttons */}
+                    </CardFooter>
+                  </Card>
+                </div>
+              </div>
             </div>
           </TabsContent>
           <TabsContent value="history" className="mt-6">
