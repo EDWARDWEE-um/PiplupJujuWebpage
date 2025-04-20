@@ -19,9 +19,11 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
   const [totalBids, setTotalBids] = useState(12)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleBid = (e: React.FormEvent) => {
+  const handleBid = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    console.log("=== Starting Bid Submission Process ===")
+    console.log("Form submitted with bid amount:", bidAmount)
+    
     const amount = Number.parseFloat(bidAmount)
 
     if (isNaN(amount) || amount <= currentBid) {
@@ -35,18 +37,65 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
 
     setIsLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      setCurrentBid(amount)
-      setTotalBids(totalBids + 1)
-      setBidAmount("")
-      setIsLoading(false)
+    try {
+      console.log("1. Validating bid amount...")
+      console.log("✅ Bid amount validated:", amount)
 
-      toast({
-        title: "Bid placed successfully!",
-        description: `You are now the highest bidder at $${amount.toFixed(2)}.`,
+      console.log("2. Preparing bid request...")
+      const bidUrl = `https://wix.webkul.com/en/wix/app/auctions/Piplupjujutcg2dea/endpoint/auction/df8d9839-d503-5c9a-91ec-cffdba41b9e4?auction_id=${params.id}&bid=${amount}`
+      console.log("Bid URL:", bidUrl)
+
+      console.log("3. Sending bid request...")
+      const response = await fetch(bidUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       })
-    }, 1000)
+
+      console.log("4. Received response:")
+      console.log("- Status:", response.status)
+      console.log("- Status text:", response.statusText)
+      console.log("- Headers:", Object.fromEntries(response.headers.entries()))
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.log("❌ Bid submission failed:")
+        console.log("- Error status:", response.status)
+        console.log("- Error text:", errorText)
+        throw new Error(`HTTP error! status: ${response.status}, text: ${errorText}`)
+      }
+
+      console.log("5. Parsing response data...")
+      const data = await response.json()
+      console.log("Response data:", data)
+      
+      if (data.status === "success") {
+        // Update UI with new bid data
+        setCurrentBid(amount)
+        setTotalBids(totalBids + 1)
+        setBidAmount("")
+        setIsLoading(false)
+
+        toast({
+          title: "Bid placed successfully!",
+          description: `You are now the highest bidder at $${amount.toFixed(2)}.`,
+        })
+      } else {
+        throw new Error(data.message || "Failed to place bid")
+      }
+      
+    } catch (err) {
+      console.log("❌ Error in bid submission process:")
+      console.error(err)
+      setIsLoading(false)
+      toast({
+        title: "Failed to place bid",
+        description: err instanceof Error ? err.message : "Unknown error occurred",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleAutoBid = () => {
