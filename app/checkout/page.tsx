@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -8,129 +8,167 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Award, CreditCard, Flame, Package, Truck } from "lucide-react"
+import { Award, CreditCard } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { useWixEcommerce } from "@/contexts/wix-ecommerce-context"
+import { useShipping } from "@/contexts/shipping-context"
+import ShippingRateSelector from "@/components/shipping-rate-selector"
+import type { Address, Parcel, ShippingRate } from "@/lib/shipengine-service"
 import { toast } from "@/hooks/use-toast"
 
 export default function CheckoutPage() {
   const { user, isAuthenticated } = useAuth()
   const router = useRouter()
+  const { cart, isCartLoading, createCheckout } = useWixEcommerce()
+  const { validateAddress } = useShipping()
+
   const [isLoading, setIsLoading] = useState(false)
   const [shippingMethod, setShippingMethod] = useState("standard")
-  const [consolidatedShipping, setConsolidatedShipping] = useState(true)
-  const [ripOrShipOptions, setRipOrShipOptions] = useState({
-    1: "rip",
-    2: "ship",
-  })
+  const [selectedShippingRate, setSelectedShippingRate] = useState<ShippingRate | null>(null)
 
-  // Mock cart items
-  const cartItems = [
-    {
-      id: 1,
-      name: "Scarlet & Violet Booster Box",
-      price: 149.99,
-      image: "/placeholder.svg?height=80&width=80",
-      quantity: 1,
-      type: "sealed",
-      ripOrShipEligible: true,
-    },
-    {
-      id: 2,
-      name: "Charizard VMAX (PSA 10)",
-      price: 299.99,
-      image: "/placeholder.svg?height=80&width=80",
-      quantity: 1,
-      type: "slab",
-      ripOrShipEligible: false,
-    },
-  ]
+  // Form state
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [address1, setAddress1] = useState("")
+  const [address2, setAddress2] = useState("")
+  const [city, setCity] = useState("")
+  const [state, setState] = useState("")
+  const [zip, setZip] = useState("")
+  const [country, setCountry] = useState("US")
 
-  const handleRipOrShipChange = (id: number, value: string) => {
-    setRipOrShipOptions((prev) => ({
-      ...prev,
-      [id]: value,
-    }))
-  }
-
-  const calculateSubtotal = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
-  }
-
-  const calculateShipping = () => {
-    if (consolidatedShipping) {
-      // One shipping fee for all items
-      switch (shippingMethod) {
-        case "express":
-          return 14.99
-        case "priority":
-          return 9.99
-        default: // standard
-          return 4.99
+  // Initialize form with user data if available
+  useEffect(() => {
+    if (user) {
+      setEmail(user.email || "")
+      const nameParts = user.name?.split(" ") || []
+      if (nameParts.length > 0) {
+        setFirstName(nameParts[0])
+        if (nameParts.length > 1) {
+          setLastName(nameParts.slice(1).join(" "))
+        }
       }
-    } else {
-      // Separate shipping fee for each item
-      let total = 0
-      cartItems.forEach((item) => {
-        // Skip shipping calculation for items that will be ripped
-        if (item.ripOrShipEligible && ripOrShipOptions[item.id] === "rip") {
-          return
-        }
-
-        switch (shippingMethod) {
-          case "express":
-            total += 14.99
-            break
-          case "priority":
-            total += 9.99
-            break
-          default: // standard
-            total += 4.99
-            break
-        }
-      })
-      return total
     }
+  }, [user])
+
+  // Shipping address for rate calculation
+  const shippingAddress: Address = {
+    name: `${firstName} ${lastName}`.trim(),
+    street1: address1,
+    street2: address2 || undefined,
+    city,
+    state,
+    postalCode: zip,
+    country,
+    phone: phone || undefined,
+    email: email || undefined,
   }
 
-  const calculateTax = () => {
-    return calculateSubtotal() * 0.07 // 7% tax rate
+  // Store address for rate calculation
+  const storeAddress: Address = {
+    name: "PokéCollect Store",
+    street1: "123 Trading Card Lane",
+    city: "San Francisco",
+    state: "CA",
+    postalCode: "94103",
+    country: "US",
   }
 
-  const calculateTotal = () => {
-    return calculateSubtotal() + calculateShipping() + calculateTax()
+  // Package details for rate calculation
+  const packageDetails: Parcel = {
+    weight: {
+      value: 1,
+      unit: "pound",
+    },
+    dimensions: {
+      length: 12,
+      width: 8,
+      height: 2,
+      unit: "inch",
+    },
   }
 
-  const calculateLoyaltyPoints = () => {
-    let points = Math.floor(calculateSubtotal())
-
-    // Double points for rip or ship items
-    cartItems.forEach((item) => {
-      if (item.ripOrShipEligible) {
-        points += Math.floor(item.price * item.quantity)
-      }
-    })
-
-    return points
+  const handleShippingRateSelect = (rate: ShippingRate) => {
+    setSelectedShippingRate(rate)
   }
 
   const handleSubmitOrder = async () => {
+    if (!cart) return
+
+    // Validate form
+    if (!firstName || !lastName || !email || !address1 || !city || !state || !zip) {
+      toast({
+        title: "Missing information",
+        description: "Please fill out all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate shipping rate selection
+    if (!selectedShippingRate) {
+      toast({
+        title: "Shipping method required",
+        description: "Please select a shipping method",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      // Validate address
+      const validatedAddress = await validateAddress(shippingAddress)
 
-    toast({
-      title: "Order Placed Successfully!",
-      description: "Thank you for your purchase. You've earned " + calculateLoyaltyPoints() + " loyalty points!",
-    })
+      // Create checkout in Wix
+      const checkoutId = await createCheckout()
 
-    setIsLoading(false)
-    router.push("/checkout/confirmation")
+      // In a real implementation, you would:
+      // 1. Save the shipping rate selection
+      // 2. Update the checkout with shipping details
+      // 3. Redirect to payment processing
+
+      toast({
+        title: "Order Placed Successfully!",
+        description: "Thank you for your purchase. You've earned loyalty points!",
+      })
+
+      setIsLoading(false)
+      router.push("/checkout/confirmation")
+    } catch (error) {
+      console.error("Error processing order:", error)
+      toast({
+        title: "Error",
+        description: "There was an error processing your order. Please try again.",
+        variant: "destructive",
+      })
+      setIsLoading(false)
+    }
+  }
+
+  if (isCartLoading) {
+    return (
+      <div className="container py-8 text-center">
+        <p>Loading checkout...</p>
+      </div>
+    )
+  }
+
+  if (!cart || cart.items.length === 0) {
+    return (
+      <div className="container py-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
+        <p className="mb-6">Add some items to your cart before proceeding to checkout.</p>
+        <Button asChild>
+          <Link href="/products/sealed">Shop Now</Link>
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -146,10 +184,7 @@ export default function CheckoutPage() {
             {/* Shipping Information */}
             <Card>
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Truck className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Shipping Information
-                </CardTitle>
+                <CardTitle className="text-base sm:text-lg">Shipping Information</CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6 space-y-3 sm:space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -159,8 +194,10 @@ export default function CheckoutPage() {
                     </Label>
                     <Input
                       id="first-name"
-                      defaultValue={user?.name?.split(" ")[0] || ""}
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
                       className="h-9 sm:h-10 text-sm"
+                      required
                     />
                   </div>
                   <div className="space-y-1 sm:space-y-2">
@@ -169,54 +206,167 @@ export default function CheckoutPage() {
                     </Label>
                     <Input
                       id="last-name"
-                      defaultValue={user?.name?.split(" ")[1] || ""}
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
                       className="h-9 sm:h-10 text-sm"
+                      required
                     />
                   </div>
                 </div>
-                <div className="space-y-1 sm:space-y-2">
-                  <Label htmlFor="address" className="text-xs sm:text-sm">
-                    Address
-                  </Label>
-                  <Input id="address" className="h-9 sm:h-10 text-sm" />
-                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className="space-y-1 sm:space-y-2">
-                    <Label htmlFor="city" className="text-xs sm:text-sm">
-                      City
+                    <Label htmlFor="email" className="text-xs sm:text-sm">
+                      Email
                     </Label>
-                    <Input id="city" className="h-9 sm:h-10 text-sm" />
-                  </div>
-                  <div className="space-y-1 sm:space-y-2">
-                    <Label htmlFor="state" className="text-xs sm:text-sm">
-                      State
-                    </Label>
-                    <Select defaultValue="ca">
-                      <SelectTrigger id="state" className="h-9 sm:h-10 text-sm">
-                        <SelectValue placeholder="Select state" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ca">California</SelectItem>
-                        <SelectItem value="ny">New York</SelectItem>
-                        <SelectItem value="tx">Texas</SelectItem>
-                        <SelectItem value="fl">Florida</SelectItem>
-                        <SelectItem value="il">Illinois</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div className="space-y-1 sm:space-y-2">
-                    <Label htmlFor="zip" className="text-xs sm:text-sm">
-                      ZIP Code
-                    </Label>
-                    <Input id="zip" className="h-9 sm:h-10 text-sm" />
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-9 sm:h-10 text-sm"
+                      required
+                    />
                   </div>
                   <div className="space-y-1 sm:space-y-2">
                     <Label htmlFor="phone" className="text-xs sm:text-sm">
                       Phone
                     </Label>
-                    <Input id="phone" type="tel" className="h-9 sm:h-10 text-sm" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="h-9 sm:h-10 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1 sm:space-y-2">
+                  <Label htmlFor="address1" className="text-xs sm:text-sm">
+                    Address Line 1
+                  </Label>
+                  <Input
+                    id="address1"
+                    value={address1}
+                    onChange={(e) => setAddress1(e.target.value)}
+                    className="h-9 sm:h-10 text-sm"
+                    required
+                  />
+                </div>
+                <div className="space-y-1 sm:space-y-2">
+                  <Label htmlFor="address2" className="text-xs sm:text-sm">
+                    Address Line 2 (Optional)
+                  </Label>
+                  <Input
+                    id="address2"
+                    value={address2}
+                    onChange={(e) => setAddress2(e.target.value)}
+                    className="h-9 sm:h-10 text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="space-y-1 sm:space-y-2">
+                    <Label htmlFor="city" className="text-xs sm:text-sm">
+                      City
+                    </Label>
+                    <Input
+                      id="city"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="h-9 sm:h-10 text-sm"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1 sm:space-y-2">
+                    <Label htmlFor="state" className="text-xs sm:text-sm">
+                      State
+                    </Label>
+                    <Select value={state} onValueChange={setState}>
+                      <SelectTrigger id="state" className="h-9 sm:h-10 text-sm">
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AL">Alabama</SelectItem>
+                        <SelectItem value="AK">Alaska</SelectItem>
+                        <SelectItem value="AZ">Arizona</SelectItem>
+                        <SelectItem value="AR">Arkansas</SelectItem>
+                        <SelectItem value="CA">California</SelectItem>
+                        <SelectItem value="CO">Colorado</SelectItem>
+                        <SelectItem value="CT">Connecticut</SelectItem>
+                        <SelectItem value="DE">Delaware</SelectItem>
+                        <SelectItem value="FL">Florida</SelectItem>
+                        <SelectItem value="GA">Georgia</SelectItem>
+                        <SelectItem value="HI">Hawaii</SelectItem>
+                        <SelectItem value="ID">Idaho</SelectItem>
+                        <SelectItem value="IL">Illinois</SelectItem>
+                        <SelectItem value="IN">Indiana</SelectItem>
+                        <SelectItem value="IA">Iowa</SelectItem>
+                        <SelectItem value="KS">Kansas</SelectItem>
+                        <SelectItem value="KY">Kentucky</SelectItem>
+                        <SelectItem value="LA">Louisiana</SelectItem>
+                        <SelectItem value="ME">Maine</SelectItem>
+                        <SelectItem value="MD">Maryland</SelectItem>
+                        <SelectItem value="MA">Massachusetts</SelectItem>
+                        <SelectItem value="MI">Michigan</SelectItem>
+                        <SelectItem value="MN">Minnesota</SelectItem>
+                        <SelectItem value="MS">Mississippi</SelectItem>
+                        <SelectItem value="MO">Missouri</SelectItem>
+                        <SelectItem value="MT">Montana</SelectItem>
+                        <SelectItem value="NE">Nebraska</SelectItem>
+                        <SelectItem value="NV">Nevada</SelectItem>
+                        <SelectItem value="NH">New Hampshire</SelectItem>
+                        <SelectItem value="NJ">New Jersey</SelectItem>
+                        <SelectItem value="NM">New Mexico</SelectItem>
+                        <SelectItem value="NY">New York</SelectItem>
+                        <SelectItem value="NC">North Carolina</SelectItem>
+                        <SelectItem value="ND">North Dakota</SelectItem>
+                        <SelectItem value="OH">Ohio</SelectItem>
+                        <SelectItem value="OK">Oklahoma</SelectItem>
+                        <SelectItem value="OR">Oregon</SelectItem>
+                        <SelectItem value="PA">Pennsylvania</SelectItem>
+                        <SelectItem value="RI">Rhode Island</SelectItem>
+                        <SelectItem value="SC">South Carolina</SelectItem>
+                        <SelectItem value="SD">South Dakota</SelectItem>
+                        <SelectItem value="TN">Tennessee</SelectItem>
+                        <SelectItem value="TX">Texas</SelectItem>
+                        <SelectItem value="UT">Utah</SelectItem>
+                        <SelectItem value="VT">Vermont</SelectItem>
+                        <SelectItem value="VA">Virginia</SelectItem>
+                        <SelectItem value="WA">Washington</SelectItem>
+                        <SelectItem value="WV">West Virginia</SelectItem>
+                        <SelectItem value="WI">Wisconsin</SelectItem>
+                        <SelectItem value="WY">Wyoming</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="space-y-1 sm:space-y-2">
+                    <Label htmlFor="zip" className="text-xs sm:text-sm">
+                      ZIP Code
+                    </Label>
+                    <Input
+                      id="zip"
+                      value={zip}
+                      onChange={(e) => setZip(e.target.value)}
+                      className="h-9 sm:h-10 text-sm"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1 sm:space-y-2">
+                    <Label htmlFor="country" className="text-xs sm:text-sm">
+                      Country
+                    </Label>
+                    <Select value={country} onValueChange={setCountry}>
+                      <SelectTrigger id="country" className="h-9 sm:h-10 text-sm">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="US">United States</SelectItem>
+                        <SelectItem value="CA">Canada</SelectItem>
+                        <SelectItem value="GB">United Kingdom</SelectItem>
+                        <SelectItem value="AU">Australia</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardContent>
@@ -228,46 +378,19 @@ export default function CheckoutPage() {
                 <CardTitle className="text-base sm:text-lg">Shipping Method</CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6 space-y-3 sm:space-y-4">
-                <RadioGroup defaultValue="standard" onValueChange={setShippingMethod}>
-                  <div className="flex items-center justify-between space-x-2 border p-3 sm:p-4 rounded-md">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="standard" id="standard" />
-                      <Label htmlFor="standard" className="font-normal cursor-pointer text-xs sm:text-sm">
-                        Standard Shipping (3-5 business days)
-                      </Label>
-                    </div>
-                    <div className="font-medium text-xs sm:text-sm">$4.99</div>
-                  </div>
-                  <div className="flex items-center justify-between space-x-2 border p-3 sm:p-4 rounded-md">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="priority" id="priority" />
-                      <Label htmlFor="priority" className="font-normal cursor-pointer text-xs sm:text-sm">
-                        Priority Shipping (2-3 business days)
-                      </Label>
-                    </div>
-                    <div className="font-medium text-xs sm:text-sm">$9.99</div>
-                  </div>
-                  <div className="flex items-center justify-between space-x-2 border p-3 sm:p-4 rounded-md">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="express" id="express" />
-                      <Label htmlFor="express" className="font-normal cursor-pointer text-xs sm:text-sm">
-                        Express Shipping (1-2 business days)
-                      </Label>
-                    </div>
-                    <div className="font-medium text-xs sm:text-sm">$14.99</div>
-                  </div>
-                </RadioGroup>
-
-                <div className="flex items-center space-x-2 pt-2">
-                  <Checkbox
-                    id="consolidated"
-                    checked={consolidatedShipping}
-                    onCheckedChange={(checked) => setConsolidatedShipping(checked as boolean)}
+                {firstName && lastName && address1 && city && state && zip ? (
+                  <ShippingRateSelector
+                    fromAddress={storeAddress}
+                    toAddress={shippingAddress}
+                    parcel={packageDetails}
+                    onRateSelect={handleShippingRateSelect}
+                    selectedRateId={selectedShippingRate?.rateId}
                   />
-                  <Label htmlFor="consolidated" className="text-xs sm:text-sm font-normal cursor-pointer">
-                    Use consolidated shipping (ship all items together in one package)
-                  </Label>
-                </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    Please fill out your shipping address to see available shipping options.
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -352,10 +475,10 @@ export default function CheckoutPage() {
                 <CardTitle className="text-base sm:text-lg">Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6 space-y-3 sm:space-y-4">
-                {cartItems.map((item) => (
+                {cart.items.map((item) => (
                   <div key={item.id} className="flex gap-3 sm:gap-4">
                     <Image
-                      src={item.image || "/placeholder.svg"}
+                      src={item.image || "/placeholder.svg?height=80&width=80"}
                       alt={item.name}
                       width={80}
                       height={80}
@@ -364,38 +487,7 @@ export default function CheckoutPage() {
                     <div className="flex-1 space-y-1">
                       <div className="font-medium text-xs sm:text-sm">{item.name}</div>
                       <div className="text-xs text-muted-foreground">Quantity: {item.quantity}</div>
-                      <div className="text-xs sm:text-sm font-medium">${item.price.toFixed(2)}</div>
-
-                      {item.ripOrShipEligible && (
-                        <div className="pt-1 sm:pt-2">
-                          <RadioGroup
-                            defaultValue={ripOrShipOptions[item.id]}
-                            onValueChange={(value) => handleRipOrShipChange(item.id, value)}
-                            className="flex gap-3 sm:gap-4"
-                          >
-                            <div className="flex items-center space-x-1">
-                              <RadioGroupItem value="rip" id={`rip-${item.id}`} />
-                              <Label
-                                htmlFor={`rip-${item.id}`}
-                                className="text-xs font-normal cursor-pointer flex items-center"
-                              >
-                                <Flame className="h-3 w-3 mr-1 text-red-500" />
-                                Rip
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <RadioGroupItem value="ship" id={`ship-${item.id}`} />
-                              <Label
-                                htmlFor={`ship-${item.id}`}
-                                className="text-xs font-normal cursor-pointer flex items-center"
-                              >
-                                <Package className="h-3 w-3 mr-1 text-blue-500" />
-                                Ship
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                      )}
+                      <div className="text-xs sm:text-sm font-medium">{item.formattedPrice}</div>
                     </div>
                   </div>
                 ))}
@@ -405,27 +497,36 @@ export default function CheckoutPage() {
                 <div className="space-y-1 sm:space-y-2">
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span>Subtotal</span>
-                    <span>${calculateSubtotal().toFixed(2)}</span>
+                    <span>{cart.formattedSubtotal}</span>
                   </div>
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span>Shipping</span>
-                    <span>${calculateShipping().toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span>Tax</span>
-                    <span>${calculateTax().toFixed(2)}</span>
-                  </div>
+                  {selectedShippingRate && (
+                    <div className="flex justify-between text-xs sm:text-sm">
+                      <span>Shipping ({selectedShippingRate.serviceName})</span>
+                      <span>{selectedShippingRate.formattedAmount}</span>
+                    </div>
+                  )}
+                  {cart.formattedTax && (
+                    <div className="flex justify-between text-xs sm:text-sm">
+                      <span>Tax</span>
+                      <span>{cart.formattedTax}</span>
+                    </div>
+                  )}
                   <Separator className="my-2" />
                   <div className="flex justify-between font-medium text-sm sm:text-base">
                     <span>Total</span>
-                    <span>${calculateTotal().toFixed(2)}</span>
+                    <span>
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      }).format(cart.total + (selectedShippingRate ? selectedShippingRate.amount : 0))}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 bg-muted p-3 rounded-md mt-3 sm:mt-4">
                   <Award className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
                   <div className="text-xs sm:text-sm">
-                    You'll earn <span className="font-medium">{calculateLoyaltyPoints()}</span> loyalty points with this
+                    You'll earn <span className="font-medium">{Math.floor(cart.total)}</span> loyalty points with this
                     purchase!
                   </div>
                 </div>

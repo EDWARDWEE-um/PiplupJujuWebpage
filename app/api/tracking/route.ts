@@ -1,21 +1,18 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getTrackingService } from "@/lib/delivery-tracking"
+import { NextResponse } from "next/server"
+import { getShipEngineService } from "@/lib/shipengine-service"
 
-export async function POST(req: NextRequest) {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const trackingNumber = searchParams.get("trackingNumber")
+  const carrierCode = searchParams.get("carrierCode") || undefined
+
+  if (!trackingNumber) {
+    return NextResponse.json({ error: "Tracking number is required" }, { status: 400 })
+  }
+
   try {
-    const body = await req.json()
-    const { trackingNumber, carrier } = body
-
-    if (!trackingNumber) {
-      return NextResponse.json({ error: "Tracking number is required" }, { status: 400 })
-    }
-
-    const trackingService = getTrackingService()
-    const trackingInfo = await trackingService.trackShipment({
-      trackingNumber,
-      carrier,
-    })
-
+    const shipEngineService = getShipEngineService()
+    const trackingInfo = await shipEngineService.trackShipment(trackingNumber, carrierCode)
     return NextResponse.json(trackingInfo)
   } catch (error) {
     console.error("Error tracking shipment:", error)

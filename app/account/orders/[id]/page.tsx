@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -8,45 +8,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Calendar, ChevronLeft, Flame, Package, Truck, MapPin, Clock, CheckCircle, ExternalLink } from "lucide-react"
+import { Calendar, ChevronLeft, Flame, Package } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { type TrackingInfo, type TrackingStatus, getTrackingService } from "@/lib/delivery-tracking"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import ShipmentTracker from "@/components/shipment-tracker"
 
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   const { user, isAuthenticated } = useAuth()
   const router = useRouter()
-  const [isTrackingLoading, setIsTrackingLoading] = useState(false)
-  const [trackingInfo, setTrackingInfo] = useState<TrackingInfo | null>(null)
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login")
     }
   }, [isAuthenticated, router])
-
-  useEffect(() => {
-    // Fetch tracking info when component mounts
-    const fetchTrackingInfo = async () => {
-      setIsTrackingLoading(true)
-      try {
-        // In a real app, we would get the tracking number from the order data
-        // For this demo, we'll use the order ID as a mock tracking number
-        const trackingService = getTrackingService()
-        const info = await trackingService.trackShipment({
-          trackingNumber: `9400123456${params.id}`,
-          carrier: "usps",
-        })
-        setTrackingInfo(info)
-      } catch (error) {
-        console.error("Error fetching tracking info:", error)
-      } finally {
-        setIsTrackingLoading(false)
-      }
-    }
-
-    fetchTrackingInfo()
-  }, [params.id])
 
   if (!isAuthenticated || !user) {
     return null
@@ -82,7 +56,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       },
     ],
     trackingNumber: `9400123456${params.id}`,
-    carrier: "USPS",
+    carrier: "usps",
     shipDate: "June 12, 2023",
   }
 
@@ -99,40 +73,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       default:
         return <Badge>{status}</Badge>
     }
-  }
-
-  const getTrackingStatusBadge = (status: TrackingStatus) => {
-    switch (status) {
-      case "pre_transit":
-        return <Badge className="bg-gray-500">Label Created</Badge>
-      case "in_transit":
-        return <Badge className="bg-blue-500">In Transit</Badge>
-      case "out_for_delivery":
-        return <Badge className="bg-yellow-500 text-black">Out for Delivery</Badge>
-      case "delivered":
-        return <Badge className="bg-green-500">Delivered</Badge>
-      case "available_for_pickup":
-        return <Badge className="bg-purple-500">Available for Pickup</Badge>
-      case "return_to_sender":
-        return <Badge className="bg-red-500">Return to Sender</Badge>
-      case "failure":
-        return <Badge className="bg-red-700">Delivery Failed</Badge>
-      default:
-        return <Badge className="bg-gray-500">Unknown</Badge>
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-    }
-
-    return new Date(dateString).toLocaleDateString("en-US", options)
   }
 
   return (
@@ -236,182 +176,39 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
 
             {/* Integrated Tracking Information */}
             {order.trackingNumber && (
-              <Card>
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                    <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                      <Truck className="h-5 w-5 text-blue-500" />
-                      Shipment Tracking
-                    </CardTitle>
-                    {trackingInfo && getTrackingStatusBadge(trackingInfo.status)}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between gap-2 p-3 bg-muted rounded-lg">
-                    <div>
-                      <p className="text-sm font-medium">Tracking Number</p>
-                      <p className="text-sm">{order.trackingNumber}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Carrier</p>
-                      <p className="text-sm">{order.carrier}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Ship Date</p>
-                      <p className="text-sm">{order.shipDate}</p>
-                    </div>
-                  </div>
-
-                  {isTrackingLoading ? (
-                    <div className="flex justify-center py-4">
-                      <div className="animate-pulse flex flex-col items-center">
-                        <div className="h-8 w-8 bg-muted rounded-full mb-2"></div>
-                        <div className="h-4 w-32 bg-muted rounded mb-2"></div>
-                        <div className="h-3 w-24 bg-muted rounded"></div>
-                      </div>
-                    </div>
-                  ) : trackingInfo ? (
-                    <div className="space-y-4">
-                      {/* Delivery Progress */}
-                      <div className="space-y-2">
-                        <div className="relative">
-                          <div className="flex justify-between mb-2">
-                            <div className="text-xs">Label Created</div>
-                            <div className="text-xs">In Transit</div>
-                            <div className="text-xs">Out for Delivery</div>
-                            <div className="text-xs">Delivered</div>
-                          </div>
-                          <div className="h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className={`h-full bg-primary rounded-full`}
-                              style={{
-                                width:
-                                  trackingInfo.status === "pre_transit"
-                                    ? "10%"
-                                    : trackingInfo.status === "in_transit"
-                                      ? "40%"
-                                      : trackingInfo.status === "out_for_delivery"
-                                        ? "75%"
-                                        : trackingInfo.status === "delivered"
-                                          ? "100%"
-                                          : "25%",
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Estimated Delivery */}
-                      {trackingInfo.estimatedDelivery && trackingInfo.status !== "delivered" && (
-                        <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                          <Clock className="h-5 w-5 text-primary" />
-                          <div>
-                            <p className="text-sm font-medium">Estimated Delivery</p>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(trackingInfo.estimatedDelivery).toLocaleDateString("en-US", {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Tracking Events Accordion */}
-                      <Accordion type="single" collapsible defaultValue="tracking-history">
-                        <AccordionItem value="tracking-history">
-                          <AccordionTrigger className="text-sm font-medium">Tracking History</AccordionTrigger>
-                          <AccordionContent>
-                            <div className="space-y-4 pt-2">
-                              {trackingInfo.events.map((event, index) => (
-                                <div key={index} className="relative pl-6 pb-4">
-                                  {index !== trackingInfo.events.length - 1 && (
-                                    <div className="absolute top-2 left-[9px] bottom-0 w-[2px] bg-muted"></div>
-                                  )}
-                                  <div
-                                    className={`absolute top-2 left-0 h-5 w-5 rounded-full flex items-center justify-center ${
-                                      index === 0 ? "bg-primary text-primary-foreground" : "bg-muted"
-                                    }`}
-                                  >
-                                    {index === 0 ? (
-                                      trackingInfo.status === "delivered" ? (
-                                        <CheckCircle className="h-3 w-3" />
-                                      ) : (
-                                        <Package className="h-3 w-3" />
-                                      )
-                                    ) : (
-                                      <div className="h-2 w-2 rounded-full bg-primary"></div>
-                                    )}
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-medium">{event.status}</p>
-                                    <div className="flex flex-col sm:flex-row sm:justify-between text-xs text-muted-foreground">
-                                      <div className="flex items-center gap-1">
-                                        <MapPin className="h-3 w-3" />
-                                        <span>{event.location}</span>
-                                      </div>
-                                      <div>{formatDate(event.timestamp)}</div>
-                                    </div>
-                                    <p className="text-xs mt-1">{event.description}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-
-                      <div className="flex justify-between items-center text-xs text-muted-foreground">
-                        <div>Last updated: {formatDate(trackingInfo.lastUpdated)}</div>
-                        <Button variant="outline" size="sm" className="text-xs h-8">
-                          <ExternalLink className="mr-2 h-3 w-3" />
-                          View on {trackingInfo.carrier.toUpperCase()}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-4 text-sm text-muted-foreground">
-                      Tracking information is not available at this time. Please check back later.
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <ShipmentTracker trackingNumber={order.trackingNumber} carrierCode={order.carrier} />
             )}
           </div>
 
-          <div className="space-y-4 md:space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base md:text-lg">Order Summary</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Subtotal</span>
-                      <span>${order.subtotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Shipping</span>
-                      <span>${order.shipping.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Tax</span>
-                      <span>${order.tax.toFixed(2)}</span>
-                    </div>
-                    <Separator className="my-2" />
-                    <div className="flex justify-between font-medium">
-                      <span>Total</span>
-                      <span>${order.total.toFixed(2)}</span>
-                    </div>
+              <CardContent className="space-y-4">
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span>Subtotal</span>
+                    <span>${order.subtotal.toFixed(2)}</span>
                   </div>
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span>Shipping</span>
+                    <span>${order.shipping.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span>Tax</span>
+                    <span>${order.tax.toFixed(2)}</span>
+                  </div>
+                  <Separator className="my-2" />
+                  <div className="flex justify-between font-medium text-sm sm:text-base">
+                    <span>Total</span>
+                    <span>${order.total.toFixed(2)}</span>
+                  </div>
+                </div>
 
-                  <div className="pt-4 space-y-2">
-                    <div className="font-medium text-sm">Payment Method</div>
-                    <div className="text-sm">{order.paymentMethod}</div>
-                  </div>
+                <div className="pt-4 space-y-2">
+                  <div className="font-medium text-sm">Payment Method</div>
+                  <div className="text-sm">{order.paymentMethod}</div>
                 </div>
               </CardContent>
             </Card>

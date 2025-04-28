@@ -12,7 +12,7 @@ interface WixEcommerceContextType {
   removeCartItem: (itemId: string) => Promise<void>
   clearCart: () => Promise<void>
   createCheckout: () => Promise<string>
-  fetchProduct: (idOrSlug: string, isSlug?: boolean) => Promise<ProductItem>
+  fetchProduct: (idOrSlug: string, isSlug?: boolean) => Promise<ProductItem | null>
   fetchProducts: (limit?: number, offset?: number) => Promise<ProductItem[]>
   fetchProductsByCategory: (categoryId: string, limit?: number, offset?: number) => Promise<ProductItem[]>
   fetchProductsByCollection: (collectionId: string, limit?: number, offset?: number) => Promise<ProductItem[]>
@@ -155,7 +155,7 @@ export function WixEcommerceProvider({ children }: { children: ReactNode }) {
         description: "Failed to load product",
         variant: "destructive",
       })
-      throw error
+      return null
     }
   }
 
@@ -169,7 +169,7 @@ export function WixEcommerceProvider({ children }: { children: ReactNode }) {
         description: "Failed to load products",
         variant: "destructive",
       })
-      throw error
+      return []
     }
   }
 
@@ -183,7 +183,7 @@ export function WixEcommerceProvider({ children }: { children: ReactNode }) {
         description: "Failed to load products",
         variant: "destructive",
       })
-      throw error
+      return []
     }
   }
 
@@ -197,7 +197,7 @@ export function WixEcommerceProvider({ children }: { children: ReactNode }) {
         description: "Failed to load products",
         variant: "destructive",
       })
-      throw error
+      return []
     }
   }
 

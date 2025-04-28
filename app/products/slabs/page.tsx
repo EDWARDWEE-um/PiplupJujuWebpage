@@ -1,15 +1,12 @@
 import type { Metadata } from "next"
-import Link from "next/link"
-import Image from "next/image"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Filter, TrendingUp } from "lucide-react"
+import { Filter } from "lucide-react"
+import WixProductGrid from "@/components/wix-product-grid"
 
 export const metadata: Metadata = {
   title: "Graded Cards (Slabs) | PokéCollect",
@@ -17,95 +14,8 @@ export const metadata: Metadata = {
 }
 
 export default function SlabsPage() {
-  const products = [
-    {
-      id: 1,
-      name: "Charizard VMAX (PSA 10)",
-      price: 299.99,
-      image: "/placeholder.svg?height=300&width=300",
-      set: "Darkness Ablaze",
-      grader: "PSA",
-      grade: "10",
-      badge: "Popular",
-      marketPrice: 319.99,
-    },
-    {
-      id: 2,
-      name: "Pikachu V Full Art (BGS 9.5)",
-      price: 149.99,
-      image: "/placeholder.svg?height=300&width=300",
-      set: "Vivid Voltage",
-      grader: "BGS",
-      grade: "9.5",
-      marketPrice: 159.99,
-    },
-    {
-      id: 3,
-      name: "Mewtwo V Alt Art (PSA 10)",
-      price: 499.99,
-      image: "/placeholder.svg?height=300&width=300",
-      set: "Paldean Fates",
-      grader: "PSA",
-      grade: "10",
-      badge: "Rare",
-      marketPrice: 529.99,
-    },
-    {
-      id: 4,
-      name: "Lugia V Alt Art (CGC 9.5)",
-      price: 399.99,
-      image: "/placeholder.svg?height=300&width=300",
-      set: "Silver Tempest",
-      grader: "CGC",
-      grade: "9.5",
-      badge: "Rare",
-      marketPrice: 389.99,
-    },
-    {
-      id: 5,
-      name: "Charizard Base Set (PSA 7)",
-      price: 1999.99,
-      image: "/placeholder.svg?height=300&width=300",
-      set: "Base Set",
-      grader: "PSA",
-      grade: "7",
-      badge: "Vintage",
-      marketPrice: 2099.99,
-    },
-    {
-      id: 6,
-      name: "Blastoise 1st Edition (PSA 8)",
-      price: 2499.99,
-      image: "/placeholder.svg?height=300&width=300",
-      set: "Base Set",
-      grader: "PSA",
-      grade: "8",
-      badge: "Vintage",
-      marketPrice: 2599.99,
-    },
-    {
-      id: 7,
-      name: "Rayquaza VMAX Alt Art (PSA 10)",
-      price: 899.99,
-      image: "/placeholder.svg?height=300&width=300",
-      set: "Evolving Skies",
-      grader: "PSA",
-      grade: "10",
-      badge: "Rare",
-      marketPrice: 949.99,
-    },
-    {
-      id: 8,
-      name: "Umbreon VMAX Alt Art (CGC 9)",
-      price: 699.99,
-      image: "/placeholder.svg?height=300&width=300",
-      set: "Evolving Skies",
-      grader: "CGC",
-      grade: "9",
-      badge: "Rare",
-      marketPrice: 679.99,
-    },
-  ]
+  // Category ID for slabs
+  const slabsCategoryId = "slabs"
 
   return (
     <div className="container px-4 py-8 md:px-6 md:py-12">
@@ -251,49 +161,7 @@ export default function SlabsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <Link key={product.id} href={`/products/slabs/${product.id}`}>
-                <Card className="overflow-hidden h-full transition-all hover:shadow-lg">
-                  <div className="relative">
-                    <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.name}
-                      width={300}
-                      height={300}
-                      className="object-cover w-full aspect-square"
-                    />
-                    {product.badge && (
-                      <Badge className="absolute top-2 right-2 bg-yellow-500 hover:bg-yellow-600 text-black">
-                        {product.badge}
-                      </Badge>
-                    )}
-                    <Badge className="absolute bottom-2 right-2 bg-primary">
-                      {product.grader} {product.grade}
-                    </Badge>
-                    {product.marketPrice !== product.price && (
-                      <Badge
-                        className={`absolute top-2 left-2 ${product.marketPrice > product.price ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"}`}
-                      >
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        {product.marketPrice > product.price
-                          ? `${Math.round(((product.marketPrice - product.price) / product.marketPrice) * 100)}% Below Market`
-                          : `${Math.round(((product.price - product.marketPrice) / product.marketPrice) * 100)}% Above Market`}
-                      </Badge>
-                    )}
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
-                    <p className="text-muted-foreground text-sm">{product.set}</p>
-                  </CardContent>
-                  <CardFooter className="p-4 pt-0 flex justify-between items-center">
-                    <p className="font-bold">${product.price.toFixed(2)}</p>
-                    <Button size="sm">Add to Cart</Button>
-                  </CardFooter>
-                </Card>
-              </Link>
-            ))}
-          </div>
+          <WixProductGrid categoryId={slabsCategoryId} limit={12} />
 
           <div className="mt-8 flex justify-center">
             <div className="flex items-center gap-2">

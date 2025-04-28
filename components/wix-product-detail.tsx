@@ -30,7 +30,7 @@ export default function WixProductDetail({ productId, productSlug }: WixProductD
     const loadProduct = async () => {
       setIsLoading(true)
       try {
-        let productData: ProductItem
+        let productData: ProductItem | null = null
 
         if (productSlug) {
           productData = await fetchProduct(productSlug, true)
@@ -40,22 +40,24 @@ export default function WixProductDetail({ productId, productSlug }: WixProductD
           throw new Error("Either productId or productSlug must be provided")
         }
 
-        setProduct(productData)
+        if (productData) {
+          setProduct(productData)
 
-        // Set default selected image
-        if (productData.images.length > 0) {
-          setSelectedImage(productData.images[0])
-        }
+          // Set default selected image
+          if (productData.images && productData.images.length > 0) {
+            setSelectedImage(productData.images[0])
+          }
 
-        // Set default selected options
-        if (productData.options && productData.options.length > 0) {
-          const defaultOptions: Record<string, string> = {}
-          productData.options.forEach((option) => {
-            if (option.choices.length > 0) {
-              defaultOptions[option.id] = option.choices[0].id
-            }
-          })
-          setSelectedOptions(defaultOptions)
+          // Set default selected options
+          if (productData.options && productData.options.length > 0) {
+            const defaultOptions: Record<string, string> = {}
+            productData.options.forEach((option) => {
+              if (option.choices.length > 0) {
+                defaultOptions[option.id] = option.choices[0].id
+              }
+            })
+            setSelectedOptions(defaultOptions)
+          }
         }
       } catch (error) {
         console.error("Error loading product:", error)
@@ -123,7 +125,7 @@ export default function WixProductDetail({ productId, productSlug }: WixProductD
             className="object-contain w-full aspect-square"
           />
         </div>
-        {product.images.length > 1 && (
+        {product.images && product.images.length > 1 && (
           <div className="grid grid-cols-4 gap-2">
             {product.images.map((image, index) => (
               <div

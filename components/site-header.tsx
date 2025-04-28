@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { usePathname } from "next/navigation"
-import { Award, Bell, LogIn, LogOut, Menu, Package, Search, ShoppingCart, User, X } from "lucide-react"
+import { Award, Bell, LogIn, LogOut, Menu, Package, Search, ShoppingCart, User, X, Trophy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -18,11 +18,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/hooks/use-auth"
+import { useGamification } from "@/contexts/gamification-context"
 
 export default function SiteHeader() {
   const pathname = usePathname()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { user, isAuthenticated, logout } = useAuth()
+  const { state } = useGamification()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -95,6 +97,12 @@ export default function SiteHeader() {
                   className={`text-base py-2 hover:text-foreground ${pathname?.startsWith("/newsletter") ? "text-foreground font-medium" : "text-muted-foreground"}`}
                 >
                   Newsletter
+                </Link>
+                <Link
+                  href="/gamification"
+                  className={`text-base py-2 hover:text-foreground ${pathname?.startsWith("/gamification") ? "text-foreground font-medium" : "text-muted-foreground"}`}
+                >
+                  Trainer Dashboard
                 </Link>
                 {isAuthenticated && (
                   <>
@@ -199,6 +207,15 @@ export default function SiteHeader() {
 
           {isAuthenticated && (
             <>
+              <Link href="/gamification">
+                <Button variant="ghost" size="icon" className="relative">
+                  <Trophy className="h-5 w-5" />
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center">
+                    {state.level}
+                  </Badge>
+                  <span className="sr-only">Trainer Dashboard</span>
+                </Button>
+              </Link>
               <Link href="/loyalty">
                 <Button variant="ghost" size="icon" className="relative">
                   <Award className="h-5 w-5" />
@@ -226,8 +243,8 @@ export default function SiteHeader() {
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <div className="flex flex-col">
-                      <span className="font-medium">Price Alert</span>
-                      <span className="text-xs text-muted-foreground">Charizard VMAX price dropped by 15%</span>
+                      <span className="font-medium">Achievement Unlocked!</span>
+                      <span className="text-xs text-muted-foreground">First Purchase - 50 XP earned</span>
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -272,6 +289,12 @@ export default function SiteHeader() {
                   <Link href="/account/orders" className="flex w-full">
                     <Package className="mr-2 h-4 w-4" />
                     Orders
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href="/gamification" className="flex w-full">
+                    <Trophy className="mr-2 h-4 w-4" />
+                    Trainer Dashboard
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>

@@ -2,12 +2,13 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CalendarDays, Flame, Package } from "lucide-react"
+import { CalendarDays, Flame, Package, Trophy, Gift } from "lucide-react"
 import NewsletterSection from "@/components/newsletter-section"
 import UpcomingStreams from "@/components/upcoming-streams"
 import PriceChart from "@/components/price-chart"
 import LoyaltyPointsPromo from "@/components/loyalty-points-promo"
 import MarketPriceWidget from "@/components/market-price-widget"
+import DailyCheckIn from "@/components/daily-check-in"
 
 export default function Home() {
   return (
@@ -46,8 +47,58 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Featured Products Section */}
+        {/* Gamification Promo Section */}
         <section className="w-full py-6 sm:py-8 md:py-12 bg-muted">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-3 text-center mb-6">
+              <div className="space-y-2">
+                <div className="inline-block rounded-lg bg-primary/20 px-3 py-1 text-sm">
+                  <Trophy className="h-4 w-4 inline mr-1" />
+                  New Trainer Dashboard
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tighter">Collect, Achieve, Compete!</h2>
+                <p className="mx-auto max-w-[600px] text-muted-foreground text-sm">
+                  Track your collection, earn achievements, and compete with other trainers
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                  <Trophy className="h-12 w-12 mb-2" />
+                  <h3 className="text-xl font-bold">Earn Achievements</h3>
+                  <p className="text-sm">Complete challenges and unlock exclusive badges and rewards</p>
+                  <Link href="/gamification">
+                    <Button className="bg-white text-blue-600 hover:bg-white/90">View Achievements</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+                <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                  <Gift className="h-12 w-12 mb-2" />
+                  <h3 className="text-xl font-bold">Daily Rewards</h3>
+                  <p className="text-sm">Check in daily to earn points and maintain your streak</p>
+                  <Link href="/gamification">
+                    <Button className="bg-white text-green-600 hover:bg-white/90">Claim Rewards</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+                <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                  <Package className="h-12 w-12 mb-2" />
+                  <h3 className="text-xl font-bold">Pack Simulator</h3>
+                  <p className="text-sm">Practice your pack opening skills with our virtual simulator</p>
+                  <Link href="/gamification?tab=simulator">
+                    <Button className="bg-white text-amber-600 hover:bg-white/90">Open Packs</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Featured Products Section */}
+        <section className="w-full py-6 sm:py-8 md:py-12">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-3 text-center">
               <div className="space-y-2">
@@ -66,15 +117,24 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Loyalty Points Promo */}
-        <section className="w-full py-8 md:py-12">
+        {/* Daily Check-in and Loyalty Points Section */}
+        <section className="w-full py-8 md:py-12 bg-muted">
           <div className="container px-4 md:px-6">
-            <LoyaltyPointsPromo />
+            <div className="grid gap-8 md:grid-cols-2">
+              <div>
+                <LoyaltyPointsPromo />
+              </div>
+              <div className="flex items-center justify-center">
+                <div className="w-full max-w-md">
+                  <DailyCheckIn />
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Market Price Trends */}
-        <section className="w-full py-8 md:py-12 lg:py-16 bg-muted">
+        <section className="w-full py-8 md:py-12 lg:py-16">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -116,7 +176,7 @@ export default function Home() {
         </section>
 
         {/* Market Price Widget */}
-        <section className="w-full py-8 md:py-12">
+        <section className="w-full py-8 md:py-12 bg-muted">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center mb-6 md:mb-8">
               <div className="space-y-2">
@@ -131,7 +191,7 @@ export default function Home() {
         </section>
 
         {/* Livestreams and Newsletter Section */}
-        <section className="w-full py-8 md:py-12 lg:py-16 bg-muted">
+        <section className="w-full py-8 md:py-12 lg:py-16">
           <div className="container px-4 md:px-6">
             <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
               <div className="space-y-4">
@@ -160,7 +220,7 @@ export default function Home() {
         </section>
 
         {/* How Rip or Ship Works */}
-        <section className="w-full py-8 md:py-12 lg:py-16">
+        <section className="w-full py-8 md:py-12 lg:py-16 bg-muted">
           <div className="container px-4 md:px-6">
             <div className="grid gap-8 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_500px]">
               <div className="flex flex-col justify-center space-y-4">
