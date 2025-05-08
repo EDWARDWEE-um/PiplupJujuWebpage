@@ -1,13 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TrendingDown, TrendingUp } from "lucide-react"
 import Image from "next/image"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function MarketPriceWidget() {
   const [category, setCategory] = useState("trending")
+  const [isClient, setIsClient] = useState(false)
+
+  // Set isClient to true when component mounts
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Mock data - in a real app, this would come from TCGPlayer API
   const trendingCards = [
@@ -17,7 +24,7 @@ export default function MarketPriceWidget() {
       set: "Darkness Ablaze",
       currentPrice: 89.99,
       previousPrice: 79.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/pokemon-card-1.png",
       change: 12.5,
     },
     {
@@ -26,7 +33,7 @@ export default function MarketPriceWidget() {
       set: "Vivid Voltage",
       currentPrice: 34.99,
       previousPrice: 39.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/pokemon-card-2.png",
       change: -12.5,
     },
     {
@@ -35,7 +42,7 @@ export default function MarketPriceWidget() {
       set: "Paldean Fates",
       currentPrice: 129.99,
       previousPrice: 99.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/pokemon-card-3.png",
       change: 30.0,
     },
     {
@@ -44,7 +51,7 @@ export default function MarketPriceWidget() {
       set: "Silver Tempest",
       currentPrice: 189.99,
       previousPrice: 199.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/pokemon-card-4.png",
       change: -5.0,
     },
   ]
@@ -55,7 +62,7 @@ export default function MarketPriceWidget() {
       name: "Scarlet & Violet Booster Box",
       currentPrice: 149.99,
       previousPrice: 139.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/standard-pack.png",
       change: 7.1,
     },
     {
@@ -63,7 +70,7 @@ export default function MarketPriceWidget() {
       name: "Paldean Fates ETB",
       currentPrice: 89.99,
       previousPrice: 79.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/premium-pack.png",
       change: 12.5,
     },
     {
@@ -71,7 +78,7 @@ export default function MarketPriceWidget() {
       name: "Hidden Fates ETB",
       currentPrice: 249.99,
       previousPrice: 199.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/ultra-pack.png",
       change: 25.0,
     },
     {
@@ -79,7 +86,7 @@ export default function MarketPriceWidget() {
       name: "151 Booster Box",
       currentPrice: 179.99,
       previousPrice: 189.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/standard-pack.png",
       change: -5.3,
     },
   ]
@@ -90,7 +97,7 @@ export default function MarketPriceWidget() {
       name: "Charizard Base Set PSA 9",
       currentPrice: 1999.99,
       previousPrice: 1899.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/pokemon-card-5.png",
       change: 5.3,
     },
     {
@@ -98,7 +105,7 @@ export default function MarketPriceWidget() {
       name: "Pikachu Illustrator PSA 7",
       currentPrice: 149999.99,
       previousPrice: 139999.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/pokemon-card-1.png",
       change: 7.1,
     },
     {
@@ -106,7 +113,7 @@ export default function MarketPriceWidget() {
       name: "Lugia 1st Edition PSA 10",
       currentPrice: 24999.99,
       previousPrice: 22999.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/pokemon-card-4.png",
       change: 8.7,
     },
     {
@@ -114,10 +121,29 @@ export default function MarketPriceWidget() {
       name: "Charizard VMAX PSA 10",
       currentPrice: 299.99,
       previousPrice: 349.99,
-      image: "/placeholder.svg?height=60&width=40",
+      image: "/images/pokemon-card-1.png",
       change: -14.3,
     },
   ]
+
+  if (!isClient) {
+    return (
+      <Card>
+        <CardContent className="p-3 sm:p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            <Skeleton className="h-10 w-[300px]" />
+            <Skeleton className="h-5 w-[200px]" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-8">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>

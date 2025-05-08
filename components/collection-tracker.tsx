@@ -1,18 +1,34 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useGamification } from "@/contexts/gamification-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Database } from "lucide-react"
+import Image from "next/image"
+import { Skeleton } from "@/components/ui/skeleton"
 
 // Sample collection data
 const sampleSets = [
-  { id: "sv1", name: "Scarlet & Violet Base Set", total: 258, collected: 142, completion: 55 },
-  { id: "sv2", name: "Paldean Fates", total: 198, collected: 87, completion: 44 },
-  { id: "sv3", name: "Obsidian Flames", total: 226, collected: 103, completion: 46 },
-  { id: "sv4", name: "Paradox Rift", total: 182, collected: 62, completion: 34 },
+  {
+    id: "sv1",
+    name: "Scarlet & Violet Base Set",
+    total: 258,
+    collected: 142,
+    completion: 55,
+    image: "/images/pokemon-card-1.png",
+  },
+  { id: "sv2", name: "Paldean Fates", total: 198, collected: 87, completion: 44, image: "/images/pokemon-card-2.png" },
+  {
+    id: "sv3",
+    name: "Obsidian Flames",
+    total: 226,
+    collected: 103,
+    completion: 46,
+    image: "/images/pokemon-card-3.png",
+  },
+  { id: "sv4", name: "Paradox Rift", total: 182, collected: 62, completion: 34, image: "/images/pokemon-card-4.png" },
 ]
 
 const sampleRarities = [
@@ -26,6 +42,27 @@ const sampleRarities = [
 export default function CollectionTracker() {
   const { state } = useGamification()
   const [activeTab, setActiveTab] = useState("overview")
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-6 w-36" />
+        </div>
+        <Skeleton className="h-10 w-full" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -113,6 +150,15 @@ export default function CollectionTracker() {
               <Card key={set.id}>
                 <CardContent className="p-4">
                   <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="flex-shrink-0">
+                      <Image
+                        src={set.image || "/placeholder.svg"}
+                        alt={set.name}
+                        width={60}
+                        height={80}
+                        className="rounded-md shadow-sm"
+                      />
+                    </div>
                     <div className="flex-1">
                       <h3 className="font-medium">{set.name}</h3>
                       <div className="flex justify-between text-sm mt-1">

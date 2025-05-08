@@ -283,7 +283,7 @@ let trackingService: DeliveryTrackingService | null = null
 
 export function getTrackingService(): DeliveryTrackingService {
   if (!trackingService) {
-    const apiKey = process.env.SHIPENGINE_API_KEY || "demo_key"
+    const apiKey = "demo_key" // Use hardcoded demo key
     trackingService = new DeliveryTrackingService(apiKey)
   }
 

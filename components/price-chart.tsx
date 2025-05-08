@@ -1,19 +1,42 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts"
 import { Button } from "@/components/ui/button"
 import { useMobile } from "@/hooks/use-mobile"
 import { toast } from "@/hooks/use-toast"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface PriceChartProps {
-  productType: "sealed" | "singles" | "slabs" | "blaziken-vmax-alt"
+  productType: string
+  productId?: string
 }
 
-export default function PriceChart({ productType }: PriceChartProps) {
+export default function PriceChart({ productType, productId }: PriceChartProps) {
   const [timeRange, setTimeRange] = useState<"1m" | "3m" | "6m" | "1y" | "all">("3m")
   const isMobile = useMobile()
   const [selectedPoint, setSelectedPoint] = useState<{ date: string; price: number } | null>(null)
+  const [isClient, setIsClient] = useState(false)
+
+  // Set isClient to true when component mounts
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // Normalize product type to match our data keys
+  const normalizedType = (() => {
+    // Convert to lowercase for case-insensitive matching
+    const type = productType.toLowerCase()
+
+    if (type === "sealed" || type.includes("sealed")) return "sealed"
+    if (type === "singles" || type === "single" || type.includes("card")) return "singles"
+    if (type === "slabs" || type === "slab" || type.includes("graded")) return "slabs"
+    if (type === "blaziken-vmax-alt" || type.includes("blaziken")) return "blaziken-vmax-alt"
+
+    // Default to singles if no match
+    console.log(`PriceChart: Unknown product type "${productType}", defaulting to singles`)
+    return "singles"
+  })()
 
   // Sample data for different product types
   const chartData = {
@@ -166,11 +189,12 @@ export default function PriceChart({ productType }: PriceChartProps) {
     },
   }
 
-  const data = chartData[productType][timeRange]
+  // Safely get data for the current product type and time range
+  const data = chartData[normalizedType]?.[timeRange] || chartData.singles[timeRange]
 
   // Get product title based on type
   const getProductTitle = () => {
-    switch (productType) {
+    switch (normalizedType) {
       case "sealed":
         return "Scarlet & Violet Booster Box"
       case "singles":
@@ -179,6 +203,8 @@ export default function PriceChart({ productType }: PriceChartProps) {
         return "Charizard VMAX (PSA 10)"
       case "blaziken-vmax-alt":
         return "Blaziken VMAX (Alternate Art Secret)"
+      default:
+        return "Product"
     }
   }
 
@@ -257,61 +283,67 @@ export default function PriceChart({ productType }: PriceChartProps) {
         </div>
       </div>
       <div className="w-full" style={{ minHeight: "250px" }}>
-        <div className="h-[250px] sm:h-[300px] w-full" style={{ minHeight: "250px" }}>
-          <ResponsiveContainer width="100%" height="100%" minHeight={250}>
-            <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 5 }} onClick={handleClick}>
-              <CartesianGrid strokeDasharray="3 3" stroke="transparent" />
-              <XAxis dataKey="date" tick={{ fontSize: isMobile ? 10 : 12 }} tickMargin={5} stroke="#9ca3af" />
-              <YAxis
-                domain={["auto", "auto"]}
-                tick={{ fontSize: isMobile ? 10 : 12 }}
-                tickFormatter={(value) => `$${value}`}
-                width={isMobile ? 40 : 50}
-                stroke="#9ca3af"
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Line
-                type="monotone"
-                dataKey="price"
-                stroke="#3b82f6"
-                activeDot={{
-                  r: isMobile ? 6 : 8,
-                  onClick: (data) => {
-                    if (data && data.payload) {
-                      const point = data.payload
-                      if (point && point.date) {
-                        setSelectedPoint(point)
-                        toast({
-                          title: "Price Information",
-                          description: `${point.date}: $${point.price.toFixed(2)}`,
-                        })
+        {!isClient ? (
+          <div className="h-[250px] sm:h-[300px] w-full flex flex-col gap-2">
+            <Skeleton className="h-full w-full" />
+          </div>
+        ) : (
+          <div className="h-[250px] sm:h-[300px] w-full" style={{ minHeight: "250px" }}>
+            <ResponsiveContainer width="100%" height="100%" minHeight={250}>
+              <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 5 }} onClick={handleClick}>
+                <CartesianGrid strokeDasharray="3 3" stroke="transparent" />
+                <XAxis dataKey="date" tick={{ fontSize: isMobile ? 10 : 12 }} tickMargin={5} stroke="#9ca3af" />
+                <YAxis
+                  domain={["auto", "auto"]}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
+                  tickFormatter={(value) => `$${value}`}
+                  width={isMobile ? 40 : 50}
+                  stroke="#9ca3af"
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Line
+                  type="monotone"
+                  dataKey="price"
+                  stroke="#3b82f6"
+                  activeDot={{
+                    r: isMobile ? 6 : 8,
+                    onClick: (data) => {
+                      if (data && data.payload) {
+                        const point = data.payload
+                        if (point && point.date) {
+                          setSelectedPoint(point)
+                          toast({
+                            title: "Price Information",
+                            description: `${point.date}: $${point.price.toFixed(2)}`,
+                          })
+                        }
                       }
-                    }
-                  },
-                }}
-                strokeWidth={isMobile ? 1.5 : 2}
-                dot={{
-                  stroke: "#3b82f6",
-                  strokeWidth: 2,
-                  r: 4,
-                  onClick: (data) => {
-                    if (data && data.payload) {
-                      const point = data.payload
-                      if (point && point.date) {
-                        setSelectedPoint(point)
-                        toast({
-                          title: "Price Information",
-                          description: `${point.date}: $${point.price.toFixed(2)}`,
-                        })
+                    },
+                  }}
+                  strokeWidth={isMobile ? 1.5 : 2}
+                  dot={{
+                    stroke: "#3b82f6",
+                    strokeWidth: 2,
+                    r: 4,
+                    onClick: (data) => {
+                      if (data && data.payload) {
+                        const point = data.payload
+                        if (point && point.date) {
+                          setSelectedPoint(point)
+                          toast({
+                            title: "Price Information",
+                            description: `${point.date}: $${point.price.toFixed(2)}`,
+                          })
+                        }
                       }
-                    }
-                  },
-                }}
-                cursor={{ stroke: "#3b82f6", strokeWidth: 1 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+                    },
+                  }}
+                  cursor={{ stroke: "#3b82f6", strokeWidth: 1 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
       {selectedPoint && selectedPoint.date && (
         <div className="text-sm text-center font-medium">

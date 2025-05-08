@@ -600,14 +600,11 @@ export class ShipEngineService {
 // Create a singleton instance
 let shipEngineService: ShipEngineService | null = null
 
+// Update the getShipEngineService function to remove the environment variable dependency
 export function getShipEngineService(): ShipEngineService {
   if (!shipEngineService) {
-    const apiKey = process.env.SHIPENGINE_API_KEY
-
-    if (!apiKey) {
-      throw new Error("SHIPENGINE_API_KEY environment variable must be set")
-    }
-
+    // Use a hardcoded demo key instead of environment variable
+    const apiKey = "demo_key"
     shipEngineService = new ShipEngineService(apiKey)
   }
 

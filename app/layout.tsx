@@ -8,6 +8,8 @@ import { AuthProvider } from "@/hooks/use-auth"
 import { WixEcommerceProvider } from "@/contexts/wix-ecommerce-context"
 import { ShippingProvider } from "@/contexts/shipping-context"
 import { GamificationProvider } from "@/contexts/gamification-context"
+import { AuthModeIndicator } from "@/components/auth-mode-indicator"
+import { WixClientProvider } from "@/context/wix-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -25,21 +27,24 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} overflow-x-hidden`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>
-            <WixEcommerceProvider>
-              <ShippingProvider>
-                <GamificationProvider>
-                  <div className="relative flex min-h-screen flex-col">
-                    <SiteHeader />
-                    <div className="flex-1">{children}</div>
-                    <SiteFooter />
-                  </div>
-                </GamificationProvider>
-              </ShippingProvider>
-            </WixEcommerceProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <WixClientProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <AuthProvider>
+              <WixEcommerceProvider>
+                <ShippingProvider>
+                  <GamificationProvider>
+                    <div className="relative flex min-h-screen flex-col">
+                      <SiteHeader />
+                      <div className="flex-1">{children}</div>
+                      <SiteFooter />
+                    </div>
+                  </GamificationProvider>
+                </ShippingProvider>
+              </WixEcommerceProvider>
+            </AuthProvider>
+            <AuthModeIndicator />
+          </ThemeProvider>
+        </WixClientProvider>
       </body>
     </html>
   )

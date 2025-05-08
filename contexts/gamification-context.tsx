@@ -92,7 +92,19 @@ const defaultState: GamificationState = {
   loyaltyPoints: 0,
 }
 
-const GamificationContext = createContext<GamificationContextType | undefined>(undefined)
+const GamificationContext = createContext<GamificationContextType>({
+  state: defaultState,
+  addExperience: () => {},
+  addLoyaltyPoints: () => {},
+  completeAchievement: () => {},
+  updateAchievementProgress: () => {},
+  completeDailyChallenge: () => {},
+  checkIn: () => false,
+  claimReward: () => false,
+  redeemDiscount: () => ({ success: false }),
+  redeemFreePack: () => ({ success: false }),
+  openPack: async () => [],
+})
 
 // Sample achievements data with rewards
 const sampleAchievements: Achievement[] = [
@@ -302,6 +314,23 @@ const generateDailyChallenges = (): DailyChallenge[] => {
   ]
 }
 
+// Sample rewards
+const sampleRewards: Reward[] = [
+  {
+    type: "discount",
+    value: 10,
+    description: "10% off your next purchase",
+    code: "WELCOME10",
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+  },
+  {
+    type: "free_pack",
+    value: "standard",
+    description: "Free Standard Pack",
+    code: "FREEPACK",
+  },
+]
+
 export const GamificationProvider = ({ children }: { children: ReactNode }) => {
   const { user, isAuthenticated } = useAuth()
   const [state, setState] = useState<GamificationState>(defaultState)
@@ -314,7 +343,8 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
         ...defaultState,
         achievements: sampleAchievements,
         dailyChallenges: generateDailyChallenges(),
-        loyaltyPoints: user.points || 0,
+        loyaltyPoints: user.points || 100, // Default to 100 points for testing
+        rewards: sampleRewards, // Add sample rewards for testing
       })
     }
   }, [isAuthenticated, user])

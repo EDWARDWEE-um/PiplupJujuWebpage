@@ -26,7 +26,7 @@ const packTypes: PackType[] = [
     id: "standard",
     name: "Standard Pack",
     description: "A standard booster pack with 10 cards",
-    image: "/vibrant-pokemon-pack.png",
+    image: "/images/standard-pack.png",
     price: 0,
     isPremium: false,
   },
@@ -34,7 +34,7 @@ const packTypes: PackType[] = [
     id: "premium",
     name: "Premium Pack",
     description: "A premium pack with better odds for rare cards",
-    image: "/shimmering-destiny-pack.png",
+    image: "/images/premium-pack.png",
     price: 100,
     isPremium: true,
   },
@@ -42,7 +42,7 @@ const packTypes: PackType[] = [
     id: "ultra",
     name: "Ultra Pack",
     description: "An ultra premium pack with guaranteed rare cards",
-    image: "/obsidian-flames-pack.png",
+    image: "/images/ultra-pack.png",
     price: 250,
     isPremium: true,
   },
@@ -276,7 +276,7 @@ export default function PackSimulator() {
                 <Card className="overflow-hidden h-full">
                   <div className="relative">
                     <Image
-                      src={card.image || "/placeholder.svg"}
+                      src={`/images/pokemon-card-${(index % 5) + 1}.png`}
                       alt={card.name}
                       width={215}
                       height={300}

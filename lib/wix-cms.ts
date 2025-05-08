@@ -150,12 +150,9 @@ let wixCmsClient: WixCmsClient | null = null
 
 export function getWixCmsClient(): WixCmsClient {
   if (!wixCmsClient) {
-    const apiKey = process.env.WIX_API_KEY
-    const siteId = process.env.WIX_SITE_ID
-
-    if (!apiKey || !siteId) {
-      throw new Error("WIX_API_KEY and WIX_SITE_ID environment variables must be set")
-    }
+    // Use hardcoded demo values instead of environment variables
+    const apiKey = "demo_api_key"
+    const siteId = "demo_site_id"
 
     wixCmsClient = new WixCmsClient(apiKey, siteId)
   }

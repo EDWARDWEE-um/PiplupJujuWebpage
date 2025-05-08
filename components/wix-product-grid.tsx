@@ -1,16 +1,13 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useWixEcommerce } from "@/contexts/wix-ecommerce-context"
 import type { ProductItem } from "@/lib/wix-ecommerce"
-import { Skeleton } from "@/components/ui/skeleton"
 
 interface WixProductGridProps {
   categoryId?: string
@@ -27,13 +24,13 @@ export default function WixProductGrid({
 }: WixProductGridProps) {
   const [products, setProducts] = useState<ProductItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const { fetchProducts, fetchProductsByCategory, fetchProductsByCollection, addToCart } = useWixEcommerce()
+  const { addToCart, fetchProducts, fetchProductsByCategory, fetchProductsByCollection } = useWixEcommerce()
 
   useEffect(() => {
     const loadProducts = async () => {
       setIsLoading(true)
       try {
-        let productData: ProductItem[]
+        let productData: ProductItem[] = []
 
         if (categoryId) {
           productData = await fetchProductsByCategory(categoryId, limit)
@@ -54,24 +51,24 @@ export default function WixProductGrid({
     loadProducts()
   }, [categoryId, collectionId, limit, fetchProducts, fetchProductsByCategory, fetchProductsByCollection])
 
-  const handleAddToCart = async (e: React.MouseEvent, productId: string) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleAddToCart = async (productId: string) => {
     await addToCart(productId, 1)
   }
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {Array.from({ length: limit }).map((_, index) => (
-          <Card key={index} className="overflow-hidden h-full">
-            <Skeleton className="w-full aspect-square" />
+          <Card key={index} className="overflow-hidden">
+            <div className="relative h-48">
+              <Skeleton className="h-full w-full" />
+            </div>
             <CardContent className="p-4">
-              <Skeleton className="h-6 w-3/4 mb-2" />
+              <Skeleton className="h-4 w-3/4 mb-2" />
               <Skeleton className="h-4 w-1/2" />
             </CardContent>
-            <CardFooter className="p-4 pt-0 flex justify-between items-center">
-              <Skeleton className="h-6 w-20" />
+            <CardFooter className="p-4 pt-0 flex justify-between">
+              <Skeleton className="h-4 w-1/4" />
               <Skeleton className="h-9 w-24" />
             </CardFooter>
           </Card>
@@ -83,50 +80,46 @@ export default function WixProductGrid({
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">No products found.</p>
+        <h3 className="text-lg font-medium">No products found</h3>
+        <p className="text-muted-foreground mt-2">Try adjusting your search or filter criteria.</p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {products.map((product) => (
-        <Link key={product.id} href={`/products/${product.slug}`}>
-          <Card className="overflow-hidden h-full transition-all hover:shadow-lg">
-            <div className="relative">
+        <Card key={product.id} className="overflow-hidden flex flex-col h-full">
+          <Link href={`/products/${product.slug}`} className="relative h-48 overflow-hidden">
+            {product.images && product.images.length > 0 ? (
               <Image
-                src={product.images[0] || "/placeholder.svg?height=300&width=300"}
+                src={product.images[0] || "/placeholder.svg"}
                 alt={product.name}
-                width={300}
-                height={300}
-                className="object-cover w-full aspect-square"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover transition-transform hover:scale-105"
               />
-              {product.stock <= 0 && (
-                <Badge className="absolute top-2 right-2 bg-red-500 hover:bg-red-600">Out of Stock</Badge>
-              )}
-              {product.stock > 0 && product.stock < 10 && (
-                <Badge className="absolute top-2 right-2 bg-yellow-500 hover:bg-yellow-600 text-black">Low Stock</Badge>
-              )}
-            </div>
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
-              <p className="text-muted-foreground text-sm">{product.additionalInfo?.["Set"] || "Pokemon TCG"}</p>
-            </CardContent>
-            <CardFooter className="p-4 pt-0 flex justify-between items-center">
-              <p className="font-bold">{product.formattedPrice}</p>
-              {showAddToCart && product.stock > 0 && (
-                <Button size="sm" onClick={(e) => handleAddToCart(e, product.id)}>
-                  Add to Cart
-                </Button>
-              )}
-              {showAddToCart && product.stock <= 0 && (
-                <Button size="sm" disabled>
-                  Out of Stock
-                </Button>
-              )}
-            </CardFooter>
-          </Card>
-        </Link>
+            ) : (
+              <div className="h-full w-full bg-muted flex items-center justify-center">
+                <span className="text-muted-foreground">No image</span>
+              </div>
+            )}
+          </Link>
+          <CardContent className="p-4 flex-grow">
+            <Link href={`/products/${product.slug}`} className="hover:underline">
+              <h3 className="font-medium line-clamp-2">{product.name}</h3>
+            </Link>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
+          </CardContent>
+          <CardFooter className="p-4 pt-0 flex justify-between items-center">
+            <div className="font-medium">{product.formattedPrice}</div>
+            {showAddToCart && (
+              <Button size="sm" onClick={() => handleAddToCart(product.id)}>
+                Add to Cart
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
       ))}
     </div>
   )

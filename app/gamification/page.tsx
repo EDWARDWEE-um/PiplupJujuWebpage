@@ -11,15 +11,14 @@ import AchievementsDisplay from "@/components/achievements-display"
 import CollectionTracker from "@/components/collection-tracker"
 import PackSimulator from "@/components/pack-simulator"
 import Leaderboard from "@/components/leaderboard"
+import RewardsDisplay from "@/components/rewards-display"
 import { Award, Gift, Trophy, Package, Database, Star } from "lucide-react"
 import { useGamification } from "@/contexts/gamification-context"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 
 export default function GamificationPage() {
   const { isAuthenticated } = useAuth()
   const router = useRouter()
-  const { trainerLevel, experience, experienceToNextLevel, rewards, redeemReward } = useGamification()
+  const { state } = useGamification()
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -40,7 +39,7 @@ export default function GamificationPage() {
         </div>
         <div className="flex items-center gap-2 mt-4 md:mt-0">
           <Award className="h-5 w-5 text-primary" />
-          <span className="font-medium">Trainer Level {trainerLevel}</span>
+          <span className="font-medium">Trainer Level {state.level}</span>
         </div>
       </div>
 
@@ -50,41 +49,12 @@ export default function GamificationPage() {
         <Leaderboard />
       </div>
 
-      {/* Rewards Section */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4 flex items-center">
-          <Star className="h-5 w-5 text-yellow-500 mr-2" />
-          Available Rewards
-        </h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          {rewards.length > 0 ? (
-            rewards.map((reward, index) => (
-              <Card key={index}>
-                <CardHeader className="pb-2">
-                  <CardTitle>{reward.title}</CardTitle>
-                  <CardDescription>{reward.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button onClick={() => redeemReward(reward.id)} className="w-full">
-                    Redeem Reward
-                  </Button>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <Card className="md:col-span-3">
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">
-                  Complete achievements and challenges to earn rewards!
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
-
-      <Tabs defaultValue="challenges" className="w-full">
-        <TabsList className="grid grid-cols-4">
+      <Tabs defaultValue="rewards" className="w-full">
+        <TabsList className="grid grid-cols-5">
+          <TabsTrigger value="rewards" className="flex items-center gap-2">
+            <Star className="h-4 w-4" />
+            <span>Rewards</span>
+          </TabsTrigger>
           <TabsTrigger value="challenges" className="flex items-center gap-2">
             <Gift className="h-4 w-4" />
             <span>Challenges</span>
@@ -102,6 +72,10 @@ export default function GamificationPage() {
             <span>Pack Simulator</span>
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="rewards" className="mt-6">
+          <RewardsDisplay />
+        </TabsContent>
 
         <TabsContent value="challenges" className="mt-6">
           <DailyChallenges />

@@ -1,233 +1,199 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ShoppingCart } from "lucide-react"
 import { useWixEcommerce } from "@/contexts/wix-ecommerce-context"
-import type { ProductItem, ProductOption } from "@/lib/wix-ecommerce"
+import { toast } from "@/hooks/use-toast"
 
 interface WixProductDetailProps {
-  productId?: string
-  productSlug?: string
+  product: any
 }
 
-export default function WixProductDetail({ productId, productSlug }: WixProductDetailProps) {
-  const [product, setProduct] = useState<ProductItem | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+export default function WixProductDetail({ product }: WixProductDetailProps) {
   const [quantity, setQuantity] = useState(1)
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
-  const [selectedImage, setSelectedImage] = useState<string>("")
-  const { fetchProduct, addToCart } = useWixEcommerce()
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const { addToCart } = useWixEcommerce()
 
-  useEffect(() => {
-    const loadProduct = async () => {
-      setIsLoading(true)
-      try {
-        let productData: ProductItem | null = null
-
-        if (productSlug) {
-          productData = await fetchProduct(productSlug, true)
-        } else if (productId) {
-          productData = await fetchProduct(productId)
-        } else {
-          throw new Error("Either productId or productSlug must be provided")
+  // Set default selected options
+  useState(() => {
+    if (product?.productOptions && product.productOptions.length > 0) {
+      const defaultOptions: Record<string, string> = {}
+      product.productOptions.forEach((option: any) => {
+        if (option.choices && option.choices.length > 0) {
+          defaultOptions[option.name] = option.choices[0]._id
         }
-
-        if (productData) {
-          setProduct(productData)
-
-          // Set default selected image
-          if (productData.images && productData.images.length > 0) {
-            setSelectedImage(productData.images[0])
-          }
-
-          // Set default selected options
-          if (productData.options && productData.options.length > 0) {
-            const defaultOptions: Record<string, string> = {}
-            productData.options.forEach((option) => {
-              if (option.choices.length > 0) {
-                defaultOptions[option.id] = option.choices[0].id
-              }
-            })
-            setSelectedOptions(defaultOptions)
-          }
-        }
-      } catch (error) {
-        console.error("Error loading product:", error)
-      } finally {
-        setIsLoading(false)
-      }
+      })
+      setSelectedOptions(defaultOptions)
     }
 
-    loadProduct()
-  }, [productId, productSlug, fetchProduct])
+    // Set default selected image
+    if (product?.media?.mainMedia?.image?.url) {
+      setSelectedImage(product.media.mainMedia.image.url)
+    } else if (product?.media?.items && product.media.items.length > 0) {
+      setSelectedImage(product.media.items[0].image.url)
+    }
+  })
 
-  const handleOptionChange = (optionId: string, choiceId: string) => {
+  const handleOptionChange = (optionName: string, choiceId: string) => {
     setSelectedOptions((prev) => ({
       ...prev,
-      [optionId]: choiceId,
+      [optionName]: choiceId,
     }))
   }
 
   const handleAddToCart = async () => {
-    if (!product) return
-    await addToCart(product.id, quantity, selectedOptions)
-  }
+    try {
+      setIsAddingToCart(true)
+      console.log("Adding to cart:", {
+        productId: product._id,
+        quantity,
+        options: selectedOptions,
+      })
 
-  if (isLoading) {
-    return (
-      <div className="grid gap-8 md:grid-cols-2">
-        <div className="space-y-4">
-          <Skeleton className="w-full aspect-square rounded-lg" />
-          <div className="grid grid-cols-4 gap-2">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="aspect-square rounded-lg" />
-            ))}
-          </div>
-        </div>
-        <div className="space-y-6">
-          <div>
-            <Skeleton className="h-10 w-3/4 mb-2" />
-            <Skeleton className="h-5 w-1/2 mb-4" />
-            <Skeleton className="h-8 w-1/3" />
-          </div>
-          <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-      </div>
-    )
+      await addToCart(product._id, quantity, selectedOptions)
+
+      toast({
+        title: "Added to cart",
+        description: `${quantity} × ${product.name} added to your cart`,
+      })
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+      toast({
+        title: "Error",
+        description: "Failed to add product to cart",
+        variant: "destructive",
+      })
+    } finally {
+      setIsAddingToCart(false)
+    }
   }
 
   if (!product) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Product not found.</p>
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-3/4" />
+        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-10 w-full" />
       </div>
     )
   }
 
+  const mainImage = selectedImage || product.media?.mainMedia?.image?.url || "/placeholder.svg"
+  const inStock = product.stock?.quantity > 0
+
   return (
-    <div className="grid gap-8 md:grid-cols-2">
-      <div className="space-y-4">
-        <div className="border rounded-lg overflow-hidden">
-          <Image
-            src={selectedImage || product.images[0] || "/placeholder.svg?height=600&width=600"}
-            alt={product.name}
-            width={600}
-            height={600}
-            className="object-contain w-full aspect-square"
-          />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">{product.name}</h1>
+        <p className="text-xl font-semibold mt-2">{product.price?.formatted?.price || "$0.00"}</p>
+      </div>
+
+      <div className="aspect-square relative rounded-lg overflow-hidden border">
+        <Image
+          src={mainImage || "/placeholder.svg"}
+          alt={product.name}
+          fill
+          className="object-contain"
+          sizes="(max-width: 768px) 100vw, 50vw"
+        />
+      </div>
+
+      {product.media?.items && product.media.items.length > 1 && (
+        <div className="grid grid-cols-5 gap-2">
+          {product.media.items.map((item: any, index: number) => (
+            <div
+              key={index}
+              className={`aspect-square relative rounded-lg overflow-hidden border cursor-pointer ${selectedImage === item.image.url ? "ring-2 ring-primary" : ""}`}
+              onClick={() => setSelectedImage(item.image.url)}
+            >
+              <Image
+                src={item.image.url || "/placeholder.svg"}
+                alt={`${product.name} - Image ${index + 1}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 20vw, 10vw"
+              />
+            </div>
+          ))}
         </div>
-        {product.images && product.images.length > 1 && (
-          <div className="grid grid-cols-4 gap-2">
-            {product.images.map((image, index) => (
-              <div
-                key={index}
-                className={`border rounded-lg overflow-hidden cursor-pointer ${selectedImage === image ? "ring-2 ring-primary" : ""}`}
-                onClick={() => setSelectedImage(image)}
+      )}
+
+      {product.description && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: product.description }} />
+          </CardContent>
+        </Card>
+      )}
+
+      {product.productOptions && product.productOptions.length > 0 && (
+        <div className="space-y-4">
+          {product.productOptions.map((option: any) => (
+            <div key={option._id}>
+              <label className="block text-sm font-medium mb-2">{option.name}</label>
+              <Select
+                value={selectedOptions[option.name] || ""}
+                onValueChange={(value) => handleOptionChange(option.name, value)}
               >
-                <Image
-                  src={image || "/placeholder.svg"}
-                  alt={`${product.name} - Image ${index + 1}`}
-                  width={150}
-                  height={150}
-                  className="object-cover w-full aspect-square"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-6">
-        <div>
-          {product.stock <= 0 ? (
-            <Badge className="bg-red-500 mb-2">Out of Stock</Badge>
-          ) : product.stock < 10 ? (
-            <Badge className="bg-yellow-500 text-black mb-2">Low Stock</Badge>
-          ) : (
-            <Badge className="bg-green-500 mb-2">In Stock</Badge>
-          )}
-          <h1 className="text-3xl font-bold">{product.name}</h1>
-          <p className="mt-2 text-gray-600">{product.additionalInfo?.["Set"] || "Pokemon TCG"}</p>
-          <div className="flex items-center mt-4">
-            <span className="text-2xl font-bold text-primary">{product.formattedPrice}</span>
-          </div>
-        </div>
-
-        {product.description && (
-          <div className="p-4 border rounded-lg">
-            <h2 className="mb-2 text-lg font-semibold">Description</h2>
-            <p className="text-sm text-gray-700">{product.description}</p>
-          </div>
-        )}
-
-        {product.options && product.options.length > 0 && (
-          <div className="space-y-4">
-            {product.options.map((option: ProductOption) => (
-              <div key={option.id} className="space-y-2">
-                <Label>{option.name}</Label>
-                <RadioGroup
-                  value={selectedOptions[option.id] || ""}
-                  onValueChange={(value) => handleOptionChange(option.id, value)}
-                  className="flex flex-wrap gap-2"
-                >
-                  {option.choices.map((choice) => (
-                    <div key={choice.id} className="flex items-center space-x-2">
-                      <RadioGroupItem value={choice.id} id={choice.id} />
-                      <Label htmlFor={choice.id}>{choice.value}</Label>
-                    </div>
+                <SelectTrigger>
+                  <SelectValue placeholder={`Select ${option.name}`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {option.choices.map((choice: any) => (
+                    <SelectItem key={choice._id} value={choice._id}>
+                      {choice.value}
+                    </SelectItem>
                   ))}
-                </RadioGroup>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="w-full sm:w-24">
-            <Select value={quantity.toString()} onValueChange={(value) => setQuantity(Number.parseInt(value))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Quantity" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: Math.min(10, product.stock || 10) }, (_, i) => i + 1).map((num) => (
-                  <SelectItem key={num} value={num.toString()}>
-                    {num}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button className="flex-1" onClick={handleAddToCart} disabled={product.stock <= 0}>
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
-          </Button>
+                </SelectContent>
+              </Select>
+            </div>
+          ))}
         </div>
+      )}
 
-        {product.additionalInfo && Object.keys(product.additionalInfo).length > 0 && (
-          <Card>
-            <CardContent className="p-4 space-y-4">
-              <h2 className="font-semibold">Product Details</h2>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                {Object.entries(product.additionalInfo).map(([key, value]) => (
-                  <div key={key}>
-                    <p className="font-medium text-gray-500">{key}</p>
-                    <p>{value}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      <div className="flex items-center gap-4">
+        <Select value={quantity.toString()} onValueChange={(value) => setQuantity(Number.parseInt(value))}>
+          <SelectTrigger className="w-24">
+            <SelectValue placeholder="Qty" />
+          </SelectTrigger>
+          <SelectContent>
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+              <SelectItem key={num} value={num.toString()}>
+                {num}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button className="flex-1" onClick={handleAddToCart} disabled={!inStock || isAddingToCart}>
+          <ShoppingCart className="mr-2 h-4 w-4" />
+          {isAddingToCart ? "Adding..." : inStock ? "Add to Cart" : "Out of Stock"}
+        </Button>
       </div>
+
+      {product.additionalInfo && Object.keys(product.additionalInfo).length > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="font-semibold mb-2">Product Details</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              {Object.entries(product.additionalInfo).map(([key, value]) => (
+                <div key={key}>
+                  <p className="font-medium text-muted-foreground">{key}</p>
+                  <p>{String(value)}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
